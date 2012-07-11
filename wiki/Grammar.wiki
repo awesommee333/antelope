@@ -1,0 +1,258 @@
+#summary The Grammar Rules defining the syntactical structure of Antelope programs
+
+= Table of Contents =
+ * == [Grammar#The_Grammar The Grammar] ==
+ * == [Grammar#Order_of_Operations Order of Operations] ==
+ * == [Grammar#Syntax_Tree_Classes Syntax Tree Classes] ==
+ * == [Grammar#Example_Walkthrough Example Walkthrough] ==
+
+<br>
+----
+= The Grammar =
+----
+<br>
+*The Antelope language grammar* is a deterministic outline of every element of a program, from top level elements such as functions and structures down to the smallest elements of an expression. Though this grammar serves as an exact documentation of Antelope syntax, its primary purpose is as a reference to make coding the compiler much easier. These grammar "rules" (along with other notes on this page) provide a detailed view of how the [http://en.wikipedia.org/wiki/Abstract_syntax_tree compiler internals] will be represented -- both for compiler design and as an API reference for external tools.
+
+For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page].
+
+=== Conventions Used:===
+
+The <font face="arial black" color="#AAA">gray bold</font> marks denote grammar symbols which are not actually part of the language syntax:
+ * <font face="arial black" color="#AAA">( )</font>` - `Grouping of items.
+ * <font face="arial black" color="#AAA">[ ]</font>` - `Optional items.
+ * <font face="arial black" color="#AAA">|</font>` - `Separates alternate options ("OR").
+ * <font face="arial black" color="#AAA">`*`</font>` - `The preceding item is repeated *zero or more* times.
+ * <font face="arial black" color="#AAA">+</font>` - `The preceding item is repeated *one or more* times.
+ * <font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font>` - `List of items (like "<font face="arial black" color="#AAA">+</font>", but with a comma between each item).
+ * Sub<font face="arial black" color="#AAA">,,1,,</font>Scripts<font face="arial black" color="#AAA">,,2,,</font>` - `Used for reference in distinguishing similar items in a rule.
+
+Everything else denotes actual syntactic elements of code:
+ * _Italic text_` - `Only a _description_ of valid syntax.
+ * `ALL` `CAPS - `Represents anything from the corresponding rule-name.
+ * _`ITALIC` `CAPS`_` - `Partial rules separated from larger rules to save space.
+ * Everything else is actual language syntax which can be typed as shown.
+
+=== Additional Notes:===
+ * These grammar rules are applied _after_ preprocessing (which includes namespace declarations and directives such as `#include`).
+ * The "<font color="red">Additional Semantics</font>" are extra requirements which are not (or could not be) covered by a grammar rule alone.
+ * Every grammar rule (and its "additional semantics") will be converted directly into the compiler code to handle the corresponding source.
+ * Some rules rely on broader rules than they actually need (e.g. using `EXPR` where only an `IDENT` is needed), but then have "additional semantics" requiring that the result match a narrower rule. This is done so that the compiler can more accurately process larger "chunks" of code where something simple is expected, thus resulting in better error messages and "recovery" from such errors (e.g. "`Expression found where identifier expected: a+b*c`").
+   * Likewise, this technique is intentionally _not_ done where it would result in ambiguity and prevent accurate parsing:
+     * "`IDENT`" is used in most of the "Top-Level" rules, since "`{`" looks like the start of an Array-Literal from within "`EXPR`".
+     * "`TYPE`" is not _directly_ used in the "`CAST`" rule, because `TERNARY` must be used instead to prevent an infinite loop.
+<br>
+||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes / <font color="red">Additional Semantics</font></font> ||
+||`COMMENT`||<font face="arial black" color="#AAA">(</font> `//` <font face="arial black" color="#AAA">[</font>_not-a-line-break_<font face="arial black" color="#AAA">]`*`</font> _line-break_ <font face="arial black" color="#AAA">) | (</font> `/*` <font face="arial black" color="#AAA">[</font>_`not-a-*/`_<font face="arial black" color="#AAA">]`*`</font> `*/` <font face="arial black" color="#AAA">)</font>||<font color="red">Comments may be intermixed, but are removed during preprocessing.</font>||
+||||||<font face="arial black"> - - Top-Level Rules - -</font>||
+||`SOURCE`||<font face="arial black" color="#AAA">(</font> _`ADT`_ <font face="arial black" color="#AAA">|</font> `FUNC` <font face="arial black" color="#AAA">|</font> `STATINIT` <font face="arial black" color="#AAA">|</font> `VARDEC` `;` <font face="arial black" color="#AAA">)`*`</font>||The top-level of program source code (_after_ preprocessing).<br><font color="red">Only one struct, interface, or cofunc (per namespace) may be anonymous (nameless).</font>||
+||> _`ADT`_||`STRUCT` <font face="arial black" color="#AAA">|</font> `INTERFACE` <font face="arial black" color="#AAA">|</font> `ENUM` <font face="arial black" color="#AAA">|</font> `COFUNC`||Declarations of Abstract Data-Types (Structures, Interfaces, Enumerations, Cofunctions).||
+||`STRUCT`||`struct` <font face="arial black" color="#AAA">[</font> `IDENT` <font face="arial black" color="#AAA">]</font> `{` <font face="arial black" color="#AAA">(</font> `VARDEC` `;` <font face="arial black" color="#AAA">|</font> `FUNC` <font face="arial black" color="#AAA">|</font> `COFUNC` <font face="arial black" color="#AAA">)`*`</font> `}`||Structure Type Declaration.||
+||`INTERFACE`||`interface` <font face="arial black" color="#AAA">[</font> `IDENT`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">]</font> `{` <font face="arial black" color="#AAA">(</font> `IDENT`<font face="arial black" color="#AAA">,,2,,</font> `(` <font face="arial black" color="#AAA">[</font> `TYPE`<font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font> <font face="arial black" color="#AAA">]</font> `)` _`RETVALS`_ `;` <font face="arial black" color="#AAA">)`*`</font> `}`||Interface Type Declaration. Each entry designates a function type (similarly to _`FUNCP`_).||
+||`ENUM`||`enum` `IDENT` `{` <font face="arial black" color="#AAA">[</font> `SLEXPR` <font face="arial black" color="#AAA">]</font> `}`||Enumeration Type declaration. <font color="red">`SLEXPR` must be a `TUPLE` of single identifiers (`IDENT`s).</font>||
+||`COFUNC`||`cofunc` <font face="arial black" color="#AAA">[</font> `$` <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">[</font> `IDENT` <font face="arial black" color="#AAA">]</font> `(` <font face="arial black" color="#AAA">[</font> _`VARDEC`_<font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font> <font face="arial black" color="#AAA">]</font> `)` _`RETVALS`_ _`BODY`_||Cofunction Type Declaration (closures, coroutines, etc.). The `$` requires the cofunction<br>to always be "interpreted" inline when called. <font color="red">The 3^rd^ variation of `VARDEC` is not allowed.</font>||
+||`FUNC`||`func` <font face="arial black" color="#AAA">[</font> `$` <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">(</font> `IDENT`<font face="arial black" color="#AAA">,,1,,</font> `.` <font face="arial black" color="#AAA">)`*`</font> `IDENT`<font face="arial black" color="#AAA">,,2,,</font> `(` <font face="arial black" color="#AAA">[</font> _`VARDEC`_<font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font> <font face="arial black" color="#AAA">]</font> `)` _`RETVALS`_ _`BODY`_||Function Declaration. The `$` requires the function to always be "interpreted" inline.<br><font color="red">_`BODY`_ may not contain any "`yield`" commands. The 3^rd^ variation of `VARDEC` is not allowed.</font>||
+||> _`RETVALS`_||<font face="arial black" color="#AAA">[</font> `:` `TYPE`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">|</font> `:` `(` `TYPE`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font> `)` <font face="arial black" color="#AAA">]</font>||The optional "Return Values" clause of a function or cofunction.||
+||`STATINIT`||<font face="arial black" color="#AAA">[</font> `$` <font face="arial black" color="#AAA">]</font> `static` _`BODY`_||Static Initialization Block (happens "before" main). The `$` requires it to be "interpreted".||
+||> _`BODY`_||`{` <font face="arial black" color="#AAA">(</font> `STATEMENT` <font face="arial black" color="#AAA">)`*`</font> `}`||The Body (relevant code) of a Function, Cofunction, or Static Initialization Block.||
+||`TYPE`||`EXPR`||Datatype. <font color="red">`EXPR` must consist of:  <font face="arial black" color="#AAA">(</font> `[` <font face="arial black" color="#AAA">[</font> `EXPR` <font face="arial black" color="#AAA">]</font> `]` <font face="arial black" color="#AAA">|</font> `*` <font face="arial black" color="#AAA">)`*`</font> <font face="arial black" color="#AAA">(</font>`IDENT` `.`<font face="arial black" color="#AAA">)`*`</font> <font face="arial black" color="#AAA">(</font>`IDENT`<font face="arial black" color="#AAA">|</font>_`FUNCP`_<font face="arial black" color="#AAA">|</font>_`SWVAR`_<font face="arial black" color="#AAA">)</font></font>||
+||||||<font face="arial black"> - - Statement-Level Rules - -</font>||
+||`STATEMENT`||`CONSTRUCT` <font face="arial black" color="#AAA">|</font> `LABEL` <font face="arial black" color="#AAA">|</font> <font face="arial black" color="#AAA">[</font> `COMMAND` <font face="arial black" color="#AAA">]</font> `;`||Valid "whole pieces" of code.||
+||`CONSTRUCT`||<font face="arial black" color="#AAA">[</font> `$` <font face="arial black" color="#AAA">]</font> `IFELSE` <font face="arial black" color="#AAA">|</font> `SWITCH` <font face="arial black" color="#AAA">|</font> `WHILE` <font face="arial black" color="#AAA">|</font> `DO` <font face="arial black" color="#AAA">|</font> `FOR`||Flow-Control Constructs. The `$` requires it to be "interpreted".||
+||`COMMAND`||<font face="arial black" color="#AAA">[</font> `$` <font face="arial black" color="#AAA">]</font> `BRANCH` <font face="arial black" color="#AAA">|</font> `DELETE` <font face="arial black" color="#AAA">|</font> `ASM` <font face="arial black" color="#AAA">|</font> `VARDEC` <font face="arial black" color="#AAA">|</font> `SLEXPR`||Various Commands. The `$` requires it to be "interpreted".<br><font color="red">`SLEXPR` must be an assignment, function-call, increment, or decrement.</font>||
+||`IFELSE`||`if` `(` `SLEXPR` `)` _`BLOCK`_<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> `else` _`BLOCK`_<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font>||"If-(Else)" Conditional Block. <font color="red">`SLEXPR` must be a single `EXPR`.</font>||
+||`SWITCH`||`switch` `(` `SLEXPR` `)` _`BLOCK`_||"Switch" Conditional Block. <font color="red">`SLEXPR` must be a single `EXPR`.</font>||
+||`WHILE`||<font face="arial black" color="#AAA">(</font> `while` <font face="arial black" color="#AAA">|</font> `until` <font face="arial black" color="#AAA">)</font> `(` `SLEXPR` `)` _`BLOCK`_||"While" loop ("`until`" inverts the condition). <font color="red">`SLEXPR` must be a single `EXPR`.</font>||
+||`DO`||`do` <font face="arial black" color="#AAA">[</font> `SLEXPR`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">]</font> _`BLOCK`_ <font face="arial black" color="#AAA">[</font> <font face="arial black" color="#AAA">(</font> `while` <font face="arial black" color="#AAA">|</font> `until` <font face="arial black" color="#AAA">)</font> `(` `SLEXPR`<font face="arial black" color="#AAA">,,2,,</font> `)` `;` <font face="arial black" color="#AAA">]</font>||"Do-(While)" loop. <font color="red">`SLEXPR`<font face="arial black" color="#AAA">,,1,,</font> must be an `IDENT`. `SLEXPR`<font face="arial black" color="#AAA">,,2,,</font> must be a single `EXPR`.</font>||
+||`FOR`||`for` `(` <font face="arial black" color="#AAA">(</font> `SLEXPR` <font face="arial black" color="#AAA">|</font> <font face="arial black" color="#AAA">[</font>`COMMAND`<font face="arial black" color="#AAA">,,1,,</font><font face="arial black" color="#AAA">]</font> `;` <font face="arial black" color="#AAA">[</font>`COMMAND`<font face="arial black" color="#AAA">,,2,,</font><font face="arial black" color="#AAA">]</font> `;` <font face="arial black" color="#AAA">[</font>`COMMAND`<font face="arial black" color="#AAA">,,3,,</font><font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">)</font> `)` _`BLOCK`_||"For" loop. <font color="red">`SLEXPR` must be a `CAST`, or a `TUPLE` of 1 variable followed by 2 or 3 values.</font>||
+||> _`BLOCK`_||`STATEMENT`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">|</font> `{` <font face="arial black" color="#AAA">(</font> `STATEMENT`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font> `}`||A Block of code, or a single statement.||
+||`BRANCH`||<font face="arial black" color="#AAA">(</font> `return` <font face="arial black" color="#AAA">|</font> `yield` <font face="arial black" color="#AAA">|</font> `break` <font face="arial black" color="#AAA">|</font> `continue` <font face="arial black" color="#AAA">)</font> <font face="arial black" color="#AAA">[</font> `SLEXPR`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">|</font> `goto` `SLEXPR`<font face="arial black" color="#AAA">,,2,,</font>||Branching statements. <font color="red">`SLEXPR` be an `IDENT` if `continue`, `break`, or `goto` is used.</font>||
+||`LABEL`||<font face="arial black" color="#AAA">(</font> `case` `SLEXPR`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">|</font> `default` <font face="arial black" color="#AAA">|</font> `SLEXPR`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)</font> `:`||Label a line of code for use with `break`, `continue`, or `goto`. <font color="red">`SLEXPR`<font face="arial black" color="#AAA">,,2,,</font> must be an `IDENT`.</font>||
+||`DELETE`||`delete` `SLEXPR`||Reclaim memory. <font color="red">Each `EXPR` in `TUPLE` must resolve to a variable or memory address.</font>||
+||`ASM`||`assembly` `SLEXPR`||Inline Assembly code. String-literals are embedded as is; all else is computed beforehand.||
+||`VARDEC`||_`MODS`_ `TYPE` <font face="arial black" color="#AAA">(</font> `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> `@` `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">[</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">),</font><font face="arial black" color="#AAA">,</font><br> <font face="arial black" color="#AAA">|</font> `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> `@` `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font> `:=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font><br> <font face="arial black" color="#AAA">|</font> `const` <font face="arial black" color="#AAA">(</font> `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">),</font><font face="arial black" color="#AAA">,</font>||Variable Declaration. `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> = name, `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> = `asm` address, `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> = init value.<br><font color="red">`LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> must be an `IDENT`. `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> must be a `STRING` or a variable.</font><br><font color="red">`LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> must not contain any array-_sizing_ ("`[]`" prefix), `ASSIGN`, or "`++`" / "`--`" operations.</font>||
+||> _`MODS`_||<font face="arial black" color="#AAA">(</font> `static` <font face="arial black" color="#AAA">|</font> `const` <font face="arial black" color="#AAA">|</font> `volatile` <font face="arial black" color="#AAA">)`*`</font>||Variable Modifiers. <font color="red">Each modifier may only be used once.</font>||
+||`SLEXPR`||`TUPLE`||Statement-Level Expression. <font color="red">`TUPLE` has the following restrictions on its contents:</font><br><font color="red">Only one "`++`" or "`--`" operation is allowed, and only as the "outermost" operation.</font><br><font color="red">Any and all `ASSIGN` operations must occur as the "outermost" set of operations.</font><br><font color="red">No array-_sizing_ ("`[]`" prefix) operations are allowed.</font>||
+||||||<font face="arial black"> - - Expression-Level Rules - -</font>||
+||`TUPLE`||`EXPR`<font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font>||List of one or more expressions ("`(1,2,3)`"). <font color="red">"Inner" tuples are "unpacked" into this one.</font>||
+||`EXPR`||`ASSIGN`||Any Expression (excluding tuples, which must usually be parenthesized).||
+||`ASSIGN`||`LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> _`AOP`_ `ASSIGN`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font>||Assignment ("`variable` `=` `value`").||
+||> _`AOP`_||`=` <font face="arial black" color="#AAA">|</font> `*=` <font face="arial black" color="#AAA">|</font> `/=` <font face="arial black" color="#AAA">|</font> `%=` <font face="arial black" color="#AAA">|</font> `+=` <font face="arial black" color="#AAA">|</font> `-=` <font face="arial black" color="#AAA">|</font> `<<=` <font face="arial black" color="#AAA">|</font> `>>=` <font face="arial black" color="#AAA">|</font> `<<<=` <font face="arial black" color="#AAA">|</font> `>>>=` <font face="arial black" color="#AAA">|</font> `&=` <font face="arial black" color="#AAA">|</font> `^=` <font face="arial black" color="#AAA">|</font> `|=`||Assignment Operators (e.g. "`A` `+=` `B`" is shorthand for "`A` `=` `A+B`").||
+||`LAMBDA`||`CAST` <font face="arial black" color="#AAA">[</font> `=>` `ASSIGN`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">|</font> `(` `)` `=>` `ASSIGN`<font face="arial black" color="#AAA">,,2,,</font>||Lambda Expression (Shorthand expression form of an anonymous function).<br><font color="red">If "`=>`" is used, then `CAST` must be a variable, an `ASSIGN` operation, or a `TUPLE` of such.</font>||
+||`CAST`||`TERNARY`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `:` `TERNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Type-Cast (`expression` `:` `datatype`). <font color="red">`TERNARY`<font face="arial black" color="#AAA">,,2,,</font> must qualify as a `TYPE`.</font>||
+||`TERNARY`||`OR` <font face="arial black" color="#AAA">[</font> `?` `TERNARY`<font face="arial black" color="#AAA">,,1,,</font> `:` `TERNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font>||Ternary/"Conditional" Operator (`condition ? true-value : false-value`).||
+||`OR`||`AND`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `|``|` `AND`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Conditional-"OR".||
+||`AND`||`BWOR`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `&&` `BWOR`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Conditional-"AND".||
+||`BWOR`||`BWXOR`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `|` `BWXOR`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Bitwise-"OR".||
+||`BWXOR`||`BWAND`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `^` `BWAND`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Bitwise-"XOR".||
+||`BWAND`||`EQUALITY`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `&` `EQUALITY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Bitwise-"AND".||
+||`EQUALITY`||`COMPARE`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `==` <font face="arial black" color="#AAA">|</font> `!=` <font face="arial black" color="#AAA">)</font> `COMPARE`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Equality ("equal to" `==` ) and Inequality ("not equal to" `!=` ).||
+||`COMPARE`||`BITSHIFT`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `<` <font face="arial black" color="#AAA">|</font> `>` <font face="arial black" color="#AAA">|</font> `<=` <font face="arial black" color="#AAA">|</font> `>=` <font face="arial black" color="#AAA">)</font> `BITSHIFT`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Comparisons: Less-than, Greater-than, Less-than-equal, Greater-than-equal.||
+||`BITSHIFT`||`ADDSUB`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `<<` <font face="arial black" color="#AAA">|</font> `>>` <font face="arial black" color="#AAA">|</font> `<<<` <font face="arial black" color="#AAA">|</font> `>>>` <font face="arial black" color="#AAA">)</font> `ADDSUB`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||(Signed) Bit-Shift left and right (`<<` `>>`); Bit-Rotation left and right (`<<<` `>>>`).||
+||`ADDSUB`||`MULTDIV`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `+` <font face="arial black" color="#AAA">|</font> `-` <font face="arial black" color="#AAA">)</font> `MULTDIV`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Addition and Subtraction.||
+||`MULTDIV`||`UNARY`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `*` <font face="arial black" color="#AAA">|</font> `/` <font face="arial black" color="#AAA">|</font> `%` <font face="arial black" color="#AAA">)</font> `UNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>||Multiply and Division; also Modulus (Remainder).||
+||||||<font face="arial black"> - - Unary Expression-Level Rules - -</font>||
+||`UNARY`||<font face="arial black" color="#AAA">(</font> `+` <font face="arial black" color="#AAA">|</font> `-` <font face="arial black" color="#AAA">|</font> `~` <font face="arial black" color="#AAA">|</font> `!` <font face="arial black" color="#AAA">|</font> `*` <font face="arial black" color="#AAA">|</font> `&` <font face="arial black" color="#AAA">|</font> `new` <font face="arial black" color="#AAA">|</font> `[` <font face="arial black" color="#AAA">[</font> `TUPLE` <font face="arial black" color="#AAA">]</font> `]` <font face="arial black" color="#AAA">)`*`</font> `PRIMARY`||Positive, Negative, Bitwise-Not, Conditional-Not,<br>Dereference, Address-of, New Instance, Array-Sizing.||
+||`PRIMARY`||<font face="arial black" color="#AAA">[</font> `$` <font face="arial black" color="#AAA">]</font> `VALUE` <font face="arial black" color="#AAA">(</font> `.` `IDENT` <font face="arial black" color="#AAA">|</font> _`INDEX`_ <font face="arial black" color="#AAA">|</font> _`GROUP`_ <font face="arial black" color="#AAA">|</font> `++` <font face="arial black" color="#AAA">|</font> `--` <font face="arial black" color="#AAA">)`*`</font>||"Primary" operations (member, index, call/literal, inc/dec). The `$` means "interpreted".||
+||> _`INDEX`_||`[ TUPLE ]` <font face="arial black" color="#AAA">|</font> `[` <font face="arial black" color="#AAA">[</font> `TUPLE` <font face="arial black" color="#AAA">]</font> `..` <font face="arial black" color="#AAA">[</font> `TUPLE` <font face="arial black" color="#AAA">]</font> `]`||Array Indexing. The "`..`" converts to a tuple (e.g. `a[1..4]` is `(a[1],a[2],a[3])`).||
+||`VALUE`||`NUMBER` <font face="arial black" color="#AAA">|</font> `IDENT` <font face="arial black" color="#AAA">|</font> `CHAR` <font face="arial black" color="#AAA">|</font> `STRING` <font face="arial black" color="#AAA">|</font> _`GROUP`_ <font face="arial black" color="#AAA">|</font> _`FUNCP`_ <font face="arial black" color="#AAA">|</font> _`AFUNC`_ <font face="arial black" color="#AAA">|</font> _`SWVAR`_||A single entity (variable, literal, datatype, etc.). <font color="red">_`GROUP`_ may not be empty parens ("`( )`").</font>||
+||> _`GROUP`_||`(` <font face="arial black" color="#AAA">[</font> `TUPLE`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">]</font> `)` <font face="arial black" color="#AAA">|</font> `{` <font face="arial black" color="#AAA">[</font> `TUPLE`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font> `}`||Grouping of zero or more expressions, or a Struct/Array Literal construction.||
+||> _`FUNCP`_||`func` `(` <font face="arial black" color="#AAA">[</font> `TYPE`<font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font> <font face="arial black" color="#AAA">]</font> `)` _`RETVALS`_||Function-Pointer type.||
+||> _`AFUNC`_||`func` `(` <font face="arial black" color="#AAA">[</font> _`VARDEC`_<font face="arial black" color="#AAA">,</font><font face="arial black" color="#AAA">,</font> <font face="arial black" color="#AAA">]</font> `)` _`RETVALS`_ _`BODY`_||Anonymous Function. <font color="red">`FUNC` must be nameless (No leading `IDENT`s).</font>||
+||> _`SWVAR`_||`switch` `{` <font face="arial black" color="#AAA">[</font> `TUPLE` <font face="arial black" color="#AAA">]</font> `}`||Switch Variable type. <font color="red">Each value listed in the `TUPLE` must be a single identifier.</font>||
+||`NUMBER`||_digit_<font face="arial black" color="#AAA">+ |</font> `0x`<font face="arial black" color="#AAA">(</font> _digit_ <font face="arial black" color="#AAA">|</font> _A-F_ <font face="arial black" color="#AAA">|</font> _a-f_ <font face="arial black" color="#AAA">)+ |</font> `0b`<font face="arial black" color="#AAA">(</font> `0` <font face="arial black" color="#AAA">|</font> `1` <font face="arial black" color="#AAA">)+</font>||Integer Number in Decimal (`123`), Hexadecimal (`0x7B`), or binary (`0b01111011`) form.||
+||`IDENT`||<font face="arial black" color="#AAA">(</font> _letter_ <font face="arial black" color="#AAA">|</font> `_` <font face="arial black" color="#AAA">) (</font> _letter_ <font face="arial black" color="#AAA">|</font> _digit_ <font face="arial black" color="#AAA">|</font> `_` <font face="arial black" color="#AAA">)`*`</font>||Identifier (a valid "name" of something, e.g. `x`, `foo2`, `_3D`).||
+||`CHAR`||`'` <font face="arial black" color="#AAA">(</font> _`ESC`_ <font face="arial black" color="#AAA">|</font> _any character but_ `'` _or_ `\` _or_ `ENTER` <font face="arial black" color="#AAA">)</font> `'`||Character Literal (e.g. `'A'`, `'\n'`, `' '`).||
+||`STRING`||<font face="arial black" color="#AAA">[</font> `b` <font face="arial black" color="#AAA">|</font> `i` <font face="arial black" color="#AAA">|</font> `r` <font face="arial black" color="#AAA">]</font> `"` <font face="arial black" color="#AAA">(</font> _`ESC`_ <font face="arial black" color="#AAA">|</font> _any character but_ `"` _or_ `\` _or_ `ENTER` <font face="arial black" color="#AAA">).</font> `"`||String Literal (e.g. `"null terminated"`, `b"byte prefixed"`, `i"int prefixed"`, `r"raw"`)||
+||> _`ESC`_||`\n` <font face="arial black" color="#AAA">|</font> `\r` <font face="arial black" color="#AAA">|</font> `\t` <font face="arial black" color="#AAA">|</font> `\0` <font face="arial black" color="#AAA">|</font> `\'` <font face="arial black" color="#AAA">|</font> `\"` <font face="arial black" color="#AAA">|</font> `\\`||Escape Characters (Line-Feed, Carriage-Return, Tab, Null, `'`, `"`, `\`).||
+
+<br>
+----
+= Order of Operations =
+----
+<br>
+
+The order of operations designates the order in which operators are applied and expressions are evaluated. The items at the top (`1`) are evaluated first, and the items at the bottom are evaluated last. For example, "`a+b*c+d`" is the same as "`a+(b*c)+d`", because multiplication ("`*`") has priority over addition ("`+`"). This originally served as an aid in creating/revising the grammar, but I have left it here as a convenient reference (and in the spirit of open documentation):
+
+ # `. call() idx[] (_) {_}  _++  _--`
+ # `+_  -_  !_  ~_  *_  &_  new_ $ `(Right to Left)
+ # `* / %`
+ # `+ -`
+ # `<< >> <<< >>>`
+ # `< > <= >=`
+ # `== !=`
+ # `&`
+ # `^`
+ # `|`
+ # `&&`
+ # `||`
+ # `?:`
+ # `:`
+ # `= *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= ()=> `(Right to Left)
+ # `,`
+
+*Note:* In an effort to minimize side-effect related errors, Antelope only allows assignments ("`=`", "`*=`", etc.) and increment/decrement operations ("`++`" or "`--`") at the statement-level (i.e. they are *not allowed within expressions*). However, by parsing these at a level of precedence common to similar languages which _do_ allow for this (e.g. [http://en.wikipedia.org/wiki/C_(programming_language) C] or [http://en.wikipedia.org/wiki/C%2B%2B C++]), the compiler is able to identify them in their entirety _within_ expressions. This results in better error messages (e.g. recognizing "`a = b+c`" rather than just "`=`" as the illegal operation) and cleaner parsing, since "the rest" of an assignment is not "left in" for the compiler to stumble over.
+
+<br>
+----
+= Syntax Tree Classes =
+----
+<br>
+
+As the compiler parses (reads and "understands") source code, a representation of each element of code is stored in one of several predefined Java [http://en.wikipedia.org/wiki/Class_(computer_programming) classes]. These classes are nested within each other to form a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree]: a representation of a program which can be analysed directly (e.g. instead of having a bunch of text, the compiler ends up with a collection of every entity in the program, each of which has a collection of all of its own contents, etc.). As the compiler finishes parsing a section of code corresponding to a particular grammar rule, the result is stored as an instance of a Java class representing the corresponding code that was given for that rule. These class instances are propagated back up the "rule-chain" (parsing code), with new class instances only being added as additional operations/statements/etc. are encountered (or when data representation needs to change; see the "`*foo.bar`" example in the "Example Wlakthrough" section).
+
+Additionally, since the compiler will be packaged as a ".jar" file, it will serve both as an executable compiler and as an accessible API _of_ the compiler. These classes will thus be available for direct use, along with other public methods of the compiler. This will allow external tools to have the compiler generate a syntax tree from code, or build a syntax tree manually and have the compiler finish compiling it (e.g. an editor which allows you to build a program objectively rather than textually), or intercept the resulting assembly code of a compiled program (which will be stored per function/struct/etc. entity) for further processing, etc.
+
+*Conventions*:
+ * Syntax:_` ClassName { `*`Datatype`*` Member1Name; `*`DataType`*` Member2Name; }`_
+ * Sub-classes are hierarchically nested under their parent-classes.
+ * Abstract (non-instantiable) classes are in `<`angle brackets`>`.
+ * Arrays are denoted by `[`square brackets`]` after the datatype.
+ * Comments (notes) are listed in green after a double-slash:
+   * <font color="green">`// this is a comment`</font>.
+
+*The Classes:*
+
+ * `<Type> { `*`Expression`*`[] dims; } `<font color="green">`// A null "dim" represents a pointer`</font>
+   * `Name { `*`Token`*`[] path; } `<font color="green">`// A dotted.name.path`</font>
+   * `FuncPtr { `*`Type`*`[] args; `*`Type`*`[] ret; }`
+     * `IFunc { `*`Token`*` name; } `<font color="green">`// JUST for Interfaces`</font>
+   * `SwitchVar { `*`Token`*`[] values; }`
+ * `<Entity> { `*`Boolean`*` interpet; } `<font color="green">`// Top-Level entities`</font>
+   * `Namespace { `*`Token`*` name; `*`Entity`*`[] contents; }`
+   * `Variable { `*`Token`*` name; `*`Type`*` type; `*`Expression`*` value; }`
+   * `Func { `*`Token`*` name; `*`Variable`*`[] args; `*`Type`*`[] ret; `*`Statement`*`[] states; `*`Type`*` receiver; }`
+     * <font color="green">`// receiver is the type of "this" for methods, or null for non-method functions`</font>
+   * `Cofunc { `*`Token`*` name; `*`Variable`*`[] args; `*`Type`*`[] ret; `*`Statement`*`[] states; }`
+   * `Struct { `*`Token`*` name; `*`Variable`*`[] vars; `*`Cofunc`*`[] cofuncs; }`
+   * `Interface { `*`Token`*` name; `*`IFunc`*`[] funcs; }`
+   * `Enum { `*`Token`*` name; `*`Token`*`[] values; }`
+   * `InitBlock { `*`Statement`*`[] states; } `<font color="green">`// Static Initialization block`</font>
+ * `<Statement> { `*`Boolean`*` iterpret; } `<font color="green">`// Whole "pieces" of code`</font>
+   * `VarDec { `*`Type`*` type; `*`Token`*`[] vars; `*`Expression`*`[] inits; }`
+   * `Construct { `*`Token`*` kind; `*`Expression`*` condition; `*`Statement`*`[] states; }`
+   * `Command { `*`Token`*` kind; `*`Expression`*` expression; }`
+     * <font color="green">`// kind is FUNC, EQUAL, CASE, GOTO, etc.`</font>
+ * `<Expression> { `*`Type`*` type; `*`Boolean`*` inParens; `*`Boolean`*` interpret; }`
+   * <font color="green">`// inParens indicates surrounding parenthesis (only used for display formatting).`</font>
+   * <font color="green">`// type is null when unknown.`</font>
+   * `Operation { `*`Token`*` kind; `*`Expression`*` lhs; `*`Expression`*` rhs; }`
+     * <font color="green">`// kind is COLON for Casts, FUNC for calls, L_BRACKET for array/struct literals`</font>
+   * `Value { `*`Token`*` value; } `<font color="green">`// A single value (number, string-literal, identifier, etc.)`</font>
+
+<br>
+----
+= Example Walkthrough =
+----
+<br>
+
+Each grammar rule corresponds to a portion of code (within the compiler)
+responsible for parsing (reading) designated portions of the language syntax. The compiler will follow these rules (or rather, the code that these rules represent) in a [http://en.wikipedia.org/wiki/Recursive_descent_parser recursive decent] pattern in order to convert source code into an [http://en.wikipedia.org/wiki/Abstract_syntax_tree organized structure] for further analysis. As an example, we can use the grammar to trace out how the compiler would parse the following snippet of code:
+
+`uint x = a + b * c;`
+
+(Oops! This flow needs to be updated to match recent changes in the grammar. I will do so a bit later).
+
+ * Since this small snippet of code can actually represent an entire program, we can start at "the top" with the "`SOURCE`" rule. Since this code represents a variable declaration, we replace "`SOURCE`" with the "`VARDEC` `;`" option, and resolve the "`VARDEC`" rule similarly:
+   * "`VARDEC`" is replaced with the option that matches our code ("_`MODS`_ `TYPE` <font face="arial black" color="#AAA">(</font> `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> `@` `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">[</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">),</font><font face="arial black" color="#AAA">,</font>").
+     * "_`MODS`_" resolves to "<font face="arial black" color="#AAA">(</font> `static` <font face="arial black" color="#AAA">|</font> `const` <font face="arial black" color="#AAA">|</font> `volatile` <font face="arial black" color="#AAA">)`*`</font>". This is repeated "zero times", since none of these modifiers are used.
+     * "`TYPE`" resolves to "`EXPR`", which resolves directly to "`ASSIGN`".
+       * "`ASSIGN`" resolves to "`LAMBDA` <font face="arial black" color="#AAA">[</font> _`AOP`_ `ASSIGN` <font face="arial black" color="#AAA">]</font>".
+         * "`LAMBDA`" is replaced with its first option ("`CAST` <font face="arial black" color="#AAA">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAA">]</font>"), since our code does not start with "`( )`".
+           * "`CAST`" resolves to "`TERNARY`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">(</font> `:` `TERNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>", which resolves to "`OR` <font face="arial black" color="#AAA">[</font> `?` `TERNARY`<font face="arial black" color="#AAA">,,1,,</font> `:` `TERNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font>", *. . .*<br>This continues from "`CAST`" down through "`PRIMARY`", dropping all optional items (<font face="arial black" color="#AAA">[` `]</font> or <font face="arial black" color="#AAA">(` `)`*`</font>),<br>until ultimately "`PRIMARY`" resolves to just "`VALUE`".
+             * "`VALUE`" is replaced with "`IDENT`", which is a stand-in for any identifier.
+               * "`IDENT`" is replaced with the identifier "`uint`" to match our example.
+                 * <font color="blue">Stored as *`Value{uint}`*</font>
+             * "`VALUE`" has now become "`uint`".
+           * "`CAST`" has become "`TERNARY`" has become "`OR`" ... has become "`uint`".
+             * The <font color="#C00">additional semantics</font> (additional requirements) of "`CAST`" are not applicable here, since "`:`" was not used (the optional "<font face="arial black" color="#AAA">(</font> `:` `TERNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>" portion was "dropped").
+           * The optional "<font face="arial black" color="#AAA">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAA">]</font>" portion is dropped, since it is not used.
+         * "`LAMBDA`" has now become "`uint`".
+           * The <font color="#C00">additional semantics</font> of "`LAMBDA`" are not applicable ("`=>`" not used).
+         * The optional "<font face="arial black" color="#AAA">[</font> _`AOP`_ `ASSIGN` <font face="arial black" color="#AAA">]</font>" is not used here.
+       * "`ASSIGN`" (and thus "`EXPR`") has now become "`uint`".
+     * "`TYPE`" has now become "`uint`".
+       * <font color="blue">Stored as *`Name{uint}`* (with "`uint`" pulled out of the *Value*)</font>
+       * The <font color="#C00">additional semantics</font> of "`TYPE`" require that any "`[]`" and "`*`" operations must come "first", followed by any number of "`IDENT.`" operations, and have either an `IDENT`, _`FUNCP`_ (function pointer type), or _`SWVAR`_ (switch-variable type) at the "end" (in other words, we must have something that "looks" like a valid datatype). These requirements are met, since this instance of "`TYPE`" has now become just "`uint`", so we continue (i.e. there are no "errors").
+     * The "<font face="arial black" color="#AAA">(</font> `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> `@` `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">[</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">),</font><font face="arial black" color="#AAA">,</font>" portion of the "`VARDEC`" rule represents a comma-separated-list ("<font face="arial black" color="#AAA">(` `),</font>") of variables being declared. Since our code has only one variable declaration, this portion is only repeated once (and thus, there are no commas "between items").
+       * "`LAMBDA`<font face="arial black" color="#AAA">,,1,,</font>" resolves to "`CAST` <font face="arial black" color="#AAA">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAA">]</font>" (rather than "`(` `)` `=>` `ASSIGN`", since our code does not have parentheses).
+         * "`CAST`" _eventually_ resolves down to "`IDENT`" as before.
+             * This time, the matching identifier is "`x`", so _this_ "`IDENT`" has now become "`x`".
+               * <font color="blue">Stored as *`Value{x}`*</font>
+         * "`CAST`" has now become "`x`" (and <font color="#C00">additional semantics</font> do not apply).
+         * The optional "<font face="arial black" color="#AAA">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAA">]</font>" is removed, since it is not used.
+       * The optional "<font face="arial black" color="#AAA">[</font> `@` `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font>" is removed, since it is not used.
+       * The optional "<font face="arial black" color="#AAA">[</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">]</font>" *is* used.
+         * The "`=`" from the rule matches the "`=`" from our example code.
+         * "`LAMBDA`<font face="arial black" color="#AAA">,,3,,</font>" resolves as before (dropping all the unused optional "<font face="arial black" color="#AAA">[` `]</font>" "<font face="arial black" color="#AAA">(` `)`*`</font>" portions), but _this_ time only down to "`ADDSUB`", since it has optional portions which *are* used (the "`+`" operator):
+           * "`ADDSUB`" resolves to "`MULTDIV`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `+` <font face="arial black" color="#AAA">|</font> `-` <font face="arial black" color="#AAA">)</font> `MULTDIV`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>".
+             * "`MULTDIV`<font face="arial black" color="#AAA">,,1,,</font>" _eventually_ resolves down to "`IDENT`", which in turn becomes "`a`".
+               * <font color="blue">Stored as *`Value{a}`*</font>
+             * The "<font face="arial black" color="#AAA">( (</font> `+` <font face="arial black" color="#AAA">|</font> `-` <font face="arial black" color="#AAA">)</font> `MULTDIV`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>" portion is repeated *one time*, as follows:
+             * The first option of "<font face="arial black" color="#AAA">(</font> `+` <font face="arial black" color="#AAA">|</font> `-` <font face="arial black" color="#AAA">)</font>" is chosen to match the "`+`" used in our code.
+             * "`MULTDIV`<font face="arial black" color="#AAA">,,2,,</font>" resolves down to "`UNARY`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">( (</font> `*` <font face="arial black" color="#AAA">|</font> `/` <font face="arial black" color="#AAA">|</font> `%` <font face="arial black" color="#AAA">)</font> `UNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>".
+                 * "`UNARY`<font face="arial black" color="#AAA">,,1,,</font>" _eventually_ resolves down to "`IDENT`", which in turn becomes "`b`".
+                   * <font color="blue">Stored as *`Value{b}`*</font>
+                 * The "<font face="arial black" color="#AAA">( (</font> `*` <font face="arial black" color="#AAA">|</font> `/` <font face="arial black" color="#AAA">|</font> `%` <font face="arial black" color="#AAA">)</font> `UNARY`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">)`*`</font>" portion is repeated *once*, as follows:
+                 * The first option of "<font face="arial black" color="#AAA">(</font> `*` <font face="arial black" color="#AAA">|</font> `/` <font face="arial black" color="#AAA">)</font>" is chosen to match the "`*`" used in our code.
+                 * "`UNARY`<font face="arial black" color="#AAA">,,2,,</font>" _eventually_ resolves to "`IDENT`", which becomes "`c`".
+                   * <font color="blue">Stored as *`Value{c}`*</font>
+             * "`MULTDIV`<font face="arial black" color="#AAA">,,2,,</font>" has now become "`b * c`".
+               * <font color="blue">Stored as *`Operation{*, Value{b}, Value{c}}`*</font>
+           * "`ADDSUB`" has now become "`a + b * c`".
+             * <font color="blue">Stored as *`Operation{+, Value{a}, Operation{*,...}}`*</font>
+         * "`LAMBDA`<font face="arial black" color="#AAA">,,3,,</font>" has now become "`a + b * c`".
+       * The "<font face="arial black" color="#AAA">[</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">]</font>" portion has become "`= a + b * c`".
+     * The "<font face="arial black" color="#AAA">(</font> `LAMBDA`<font face="arial black" color="#AAA">,,1,,</font> <font face="arial black" color="#AAA">[</font> `@` `LAMBDA`<font face="arial black" color="#AAA">,,2,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">[</font> `=` `LAMBDA`<font face="arial black" color="#AAA">,,3,,</font> <font face="arial black" color="#AAA">]</font> <font face="arial black" color="#AAA">),</font><font face="arial black" color="#AAA">,</font>" portion has now become "`x = a + b * c`".
+   * "`VARDEC`" has now become "`uint x = a + b * c`".
+     * <font color="blue">Stored as *`VarDec{Name{uint}, x, Operation{+, Value{a}, Operation{*,...}}}`*</font>
+     * The <font color="#C00">additional semantics</font> are met (including the allowance of the assignment on the "outside").
+   * The "`;`" (semicolon) matches the one from our example code.
+ * "`SOURCE`" has now become "`uint x = a + b * c;`", which matches the original code before parsing.
+   * <font color="blue">The *`VarDec`* is replaced with *`Variable{x, Name{uint}, Operation{+,...}}`*</font>
+ * <font color="blue">The entire source is stored as *`Namespace{(none), Variable{x,...}}`*</font>
+
+*Note:* Rather than starting with code and filtering it through rules (as the compiler would), this same process can be used to build any (syntactically accurate) Antelope program from scratch!
+
+The <font color="blue">blue highlights</font> show how the compiler uses the classes (listed previously on this page) to store the results of each step in the parsing. Notice that not _all_ steps result in such a construction: Most of the rules will transparently pass a class entry from a lower rule to a higher rule without making any changes. However, each rule provides an _opportunity_ for a different kind of operation to be given. This allows different kinds of operations to be applied in a predefined order (e.g. multiplication before addition, as you can see where the "`*`" operation was stored within the "`+`" operation, which is not the same order that they _appear_ from left to right).
+
+Sometimes the results are switched from one class to another as they are parsed. This allows some things to be stored in a way that matches items at one level, which then turn out to be intended for another use at a higher level. For example, something like "`*foo.bar`" would at first be represented as a dereference of some "bar" entry in some "foo" structure; but then a higher context would determine that it is actually being used as a datatype (a pointer to some "bar" type from some "foo" namespace) as in "`*foo.bar x = y`". Such changes can be seen in the above example where "`uint`" starts as a *`Value`* but comes out as a *`Type`*. Likewise, since variable declarations at the namespace-level really only serve to create namespace-level variables (rather than creating and initializing them as an executable _statement_), the resulting *`VarDec`* (Variable declaration) is discarded and replaced with a *`Variable`* containing the relevant information, which is in turn stored in a *`Namespace`* entry.
