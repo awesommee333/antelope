@@ -5,7 +5,7 @@ public class Compiler {
         int errors = 0;
         boolean showTokens = true;  // TOGGLE THESE FOR DEBUGGING OUTPUT
         boolean showErrors = true;  // TOGGLE THESE FOR DEBUGGING OUTPUT
-        LinkedList<Token> src = Preprocessor.process("Test.antler",null);
+        LinkedList<Token> src = Tokenizer.tokenize("Test.antler",null);
 
         for(Token t : src) {
             if(t.isError()) {
