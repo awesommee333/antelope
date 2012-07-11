@@ -239,7 +239,7 @@ Non-precomputable static initializations are computed at runtime "before" main()
 
 == Dynamic Memory Allocation ==
 
-The `new` and `delete` keywords dynamically allocate & deallocate memory, but must be defined via specific function declarations (where "size" is how many bytes to allocate, and "addr" is the address of the [previous] allocation):
+The `new` and `delete` keywords dynamically allocate & deallocate memory, but must be defined via specific function declarations (where "size" is how many bytes to allocate, and "addr" is the address of the (previous) allocation):
 {{{
     func new(uint addr, byte size): uint { ... } // allocates memory and returns the address.
     func delete(uint addr, byte size) { ... } // frees previously allocated memory.
@@ -592,4 +592,4 @@ Values will be passed/returned in registers such that any two functions with the
 
 Default arguments (and struct members) must come last, and will be embedded in functions so they can be pointed-to as their reduced versions.
 
-An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace (e.g. "List myList" rather than "ListNameSpace.ListStruct myList"). This also gives namespace values ("List.staticValue") the feel of Java/C#'s static class members.
+An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace (e.g. "`List myList`" rather than "`ListNameSpace.ListStruct myList`"). This also gives namespace values ("`List.staticValue`") the feel of Java/C#'s static class members.
