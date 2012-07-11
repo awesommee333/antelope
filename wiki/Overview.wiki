@@ -1,0 +1,595 @@
+#summary An Overview of the Antelope language
+= Table of Contents =
+ * == [Overview#General_Features General Features] ==
+ * == [Overview#Functions_&_Methods Functions & Methods] ==
+ * == [Overview#Structs,_Cofuncs,_Interfaces Structs, Cofuncs, Interfaces] ==
+ * == [Overview#The_Antelope_Environment The Antelope Environment] ==
+ * == [Overview#Final_Modifications Final Modifications] ==
+
+<br>
+----
+= General Features =
+----
+<br>
+
+== Variable Declarations ==
+
+|| *Primitive Types* || _One Byte_ || _Two Bytes_ || || *Modifiers* || _Explanation_ ||
+|| _Unsigned Types:_ || byte, char, bool ||uint || || _volatile_ || Always fetch from memory (never assume value). ||
+|| _Signed Types:_  || sbyte || int || || _static_ || Share across all contexts (one-time initializations). ||
+
+Variables are declared by listing variable names after a datatype, or using the inference operator. Type-modifiers (if any) are listed before the datatype. Antelope automatically inserts dereferencing (`*`) and addressing (`&`) operators when the context for them is clear (first so that indexing (`[]`) and dotting (`.`) makes sense, and second to adjust the right-side of assignments to be suitable for the variable being assigned-to):
+{{{
+   *int pi;    // pi is a pointer-to-int variable
+   int x,y,z;   // Declare int variables x, y, and z
+   int a=1, b=2; // Declare and initialize a and b to 1 and 2
+   const HALF = 1/2; // Constant expressions are declared without a type
+   const byte W = 2; // Constant variables are declared with the type
+   volatile int v;   // v will always be fetched from memory
+
+   i := 5;        // Numeric literals are ints by default (i is an int),
+   b := (5:byte); // but they can be cast to other types (b is a byte).
+
+   h1 := 0x01;    // Hexadecimal and binary literals default to the
+   h2 := 0x0001;  // smallest (unsigned) type for the number of digits
+   b1 := 0b1;     // (h1 and b1 are bytes, but h2 and b2 are uints).
+   b2 := 0b0000000001;
+
+   p := &x;        // Declare p with an interred type of *int
+   q := {'H','I'}; // Declare q with inferred type of [2]char
+
+   p = b; // Understood as "p = &b", since p is a pointer (*byte).
+   b = p; // Understood as "b = *p", since b is a byte.
+}}}
+
+All variables are statically allocated. They are stored _within_ instructions when possible (saves space and uses faster instructions); otherwise within "safe-RAM" space outside of the program (specified with `#allocate`); otherwise directly into the program body. However, the compiler may decide to split variables up into multiple entities or store values directly in registers as a result of optimization (see "Interpreted Aspects"). Variables can be associated with an explicit assembly-coded address (e.g. `int x @ "asmAddress"` aliases x with an int value at "asmAddress").
+
+== Arrays ==
+
+Array types are declared with square brackets `[]` preceding the base-type. If a size is provided, then the array is statically allocated; otherwise it is stored as a pointer to an array. "Jagged" arrays are constructed as arrays of array-pointers (with the "inner" dimensions omitted). "Rectangular" arrays are stored as a single static allocation, and indicated by listing multiple dimensions between the brackets (e.g. `[x,y,z]`). Array literals are declared with the dimensions omitted, but result in static allocations:
+{{{
+   // Array types:
+      [5]int // (static) array of 5 ints
+       []int // pointer to array of ints
+      *[]int // pointer to pointer to array of ints
+     *[5]int // ILLEGAL! (use []int instead)
+
+    [5,5]int // (static) array of 5x5 (25) ints
+     [,5]int // pointer to array of (?x5) ints
+      [,]int // ILLEGAL! (provide an inner dimension, or use []int)
+    [5][]int // (static) array of 5 []int values
+   [5][5]int // ILLEGAL! (use [5,5]int or [5][]int instead)
+
+     arr1 := []int{1,2,3,4,5,6,7,8,9};  // arr1 is this [9]int
+     arr2 := [,]int{{1,2},{3,4},{5,6}}; // arr2 is this [3,2]int
+
+     arr3 := &[]int{1,2,3}; // arr3 is given the ADDRESS ("&") of
+                            // this [3]int, and is therefor an []int
+
+     arr4 := new [5]int; // arr4 is given the address of a dynamically
+                         // allocated [5]int, and is therefor an []int
+
+     arr5 := new []int{1,2,3}; // same deal as with arr4, but with the
+                               // array initialized with the given values
+
+   // Rectangular arrays can be represented as linear arrays:
+   [X,Y,Z]int arr; // An XxYxZ array of ints
+    [,Y,Z]int p3 = arr; // Pointer to an (?)xYxZ array (3D)
+      [,Z]int p2 = arr; // Pointer to an (?)xZ array (2D)
+        []int p1 = arr; // Pointer to an (?) array (1D)
+   p3[a,b,c] == p2[a*Y+b, c] == p1[(a*Y+b)*Z+c] == arr[a,b,c]
+   // NOTE ALSO: arr[i] == p1[i]; arr[i,j] == p2[i,j]; etc.
+
+   // Strings are represented as character arrays:
+   str1 := "Null";  // null terminated: []char{'N','u','l','l',0};
+   str2 := b"Byte"; // byte prefixed: []char{4,'B','y','t','e'};
+   str3 := i"Int";  // int prefixed: []char{3,0,'I','n','t'}; ("3,0" because z80 is little-endian)
+   str4 := r"RAW!"; // raw string: []char{'R','A','W','!'};
+}}}
+
+== Tuples ==
+
+Antelope only provides "tuples" in the loose sense that parenthesis can be used to group values together _before_ they are operated on (i.e. you can operate on a "tuple of values", but a tuple is not a datatype in itself). Thus ((A,B),C) is the same as (A,B,C) in the same manner that ((A+B)+C) is the same as (A+B+C):
+{{{
+   byte a, b = c, d;     // byte a, (b = c), d;
+   byte (a, b) = (c, d); // byte a = c, b = d;
+   byte a = (((b)));     // byte a = b; (as expected)
+  (a,b,c) = (x,y,z);     // a=x; b=y; c=z;
+  (a,b,c) = ((x,y),z);   // (same as above)
+  (x,y,z) = arr[5..8];   // (x,y,z) = (arr[5],arr[6],arr[7]);
+}}}
+
+== Enumerations ==
+
+Enums provide generic label-values, and are designed to be very efficient for use with switches:
+
+ * An enum may not contain more than 256 values (which are bytes)
+ * Enum values can be compared and assigned, but the numeric representation is hidden (and predetermined for use with look-up tables)
+ * A look-up-table is used for fast jumping when an enum is used in a switch:
+
+{{{
+   enum Letter {A, B, C, D, E}
+   Letter l1 = Letter.A;
+   Letter l2 = l1;
+
+   if(l1 > l2) { ... }
+
+   switch(l1) {
+      case Letter.A: ...
+      case Letter.B: ...
+      case Letter.C: ...
+   }
+
+   /* --The Assembly--
+    * ld hl,cases   ;3
+    * ld bc,(value) ;4
+    * add hl,bc     ;1
+    * jp (hl)       ;1
+    *cases: 
+    * .dw case_A 
+    * .dw case_B 
+    * .dw case_C
+    * .dw END_OF_THE_SWITCH ;D
+    * .dw END_OF_THE_SWITCH ;E
+    */
+}}}
+
+== Switch Variables ==
+
+Switch-variables are used to directly modify the selected value within a switch. This is much more efficient than using an enum value, because each value of a switch variable corresponds directly with the address of a "case" within its corresponding switch (and therefor can be referred to directly by name without any ambiguity). In other words, a switch variables is not _used in a switch_, but it actually _is part of a specific switch_:
+
+{{{
+   switch{X,Y,Z} g1 = g1.X; // Values are referred to via switch-name
+   switch{X,Y,Z} g2; ... g2 = g2.X; // g1 and g2 are different types!
+
+   g1 copy1 = g1.Y; // The switch variable name is also a datatype!
+   g1 = copy1;
+
+   switch(g1) { 
+      case X: ... // X refers to THIS case-address when used with g1
+      case Y: ... 
+      case Z: ... 
+      // NO default code, because all cases are explicit
+   }
+
+   /* --The Assembly--
+    * jp something ;modifying g1 modifies "something" directly
+    */
+}}}
+
+== Type-Casts ==
+
+A Type-cast tells the compiler to convert something to different datatype. Whenever possible, and actual conversion will be avoided (e.g. the compiler will have an operation performed in such a way that the _result_ is of the correct type; or it may try to "pick out" the relevant portion or "mask out" the irrelevant information). Type-casts are written by placing a colon and the target type after an expression:
+{{{
+   int a, b;
+   (a + b : byte); // add a + b such that the result is a byte
+   (a : byte) + b; // treat a like a byte while adding
+   a + (b : byte); // treat b like a byte while adding
+}}}
+
+== Flow-Control Constructs ==
+
+Switches and "else-if" chains are modeled the same way: If there is a clear pattern of values, then one or more look-up-tables are used (with value bounds checking as needed). Otherwise all conditional checks are placed together before all the code-blocks (saves one jump). "While" and "do-while" loops are stored with the conditional checks AFTER the loop body (while loops initially jump to the check after the loop) (saves one jump per iteration):
+{{{
+   if(X) { A }      // If X, then do A;
+   else if(Y) { B } // Otherwise if Y, do B;
+   ...              // (as many "else-ifs" as you like);
+   else { C }       // Otherwise, do C (all "elses" optional).
+
+   switch(X) {
+      case A:   ... break; // Do this code if X==A.
+      case B,C: ... break; // Do this code if X==B or X==C.
+      case D:   ...  // Fall through to next case (no "break").
+      default:  ...  // Default case (optional).
+   }
+
+   while(X) { A }     // While X, do A; repeat.
+   until(X) { A }     // Until X, do A; repeat.
+   do { A };          // Do A; repeat (forever).
+   do { A } while(X); // Do A; repeat while X.
+   do { A } until(X); // Do A; repeat until X.
+
+   do start {   // Equivalent to:
+      A         // ::: goto start; do { ... } until(X);
+   start:       // Compare to the alternatives:
+      B         // ::: B; do { A; B; } while(X);
+   } until(X);  // ::: while(true) { B; if(!X){break;} A; }
+
+   for(X; Y; Z) { ... } // X; while(Y) { ... Z }
+   for(V,A,B,I) { ... } // for(V=A; V<B; V+=I) { ... }
+   for(V: arr)  { ... } // for(t,0,length(arr),1) { V = arr[t]; ... }
+   for(V: someYieldyCofunc) { ... } // (similar to above)
+
+   outer:
+   while(X) {
+      while(Y) {
+         ...
+         break;       // Exit from inner-most loop
+         break outer; // Exit from "outer" (the "while(X)")
+         continue;       // Continue inner-most loop
+         continue outer; // Continue "outer" loop
+      }
+   }
+}}}
+
+== Goto Command ==
+
+The "goto" command causes program execution to jump to the correspondingly labeled part of the program. Labels associate identifiers with locations in the program (indicated by an identifier followed by a colon). The goto command can only be used to jump _forward_ within the same function, but never into a nested context (out of is ok):
+{{{
+   func main() {
+      start:
+      if(...) {
+         goto start;  // ILLEGAL (backwards)
+         goto end;    // Ok (out of "if")
+         goto inner;  // ILLEGAL (into "else")
+         goto extern; // ILLEGAL (into another function)
+      }
+      else {
+         inner:
+      }
+      end:
+   }
+
+   func another() { extern: }
+}}}
+
+== Static Initializations ==
+
+Non-precomputable static initializations are computed at runtime "before" main(). Other "pre-main" code can be specified within a `static { ... }` block. All such code is compiled into a self-falsifying conditional block so that program write-back works as intended. Static class-instances are initialized using the initial-values of each class member (these are also copied into constructors as needed).
+
+== Dynamic Memory Allocation ==
+
+The `new` and `delete` keywords dynamically allocate & deallocate memory, but must be defined via specific function declarations (where "size" is how many bytes to allocate, and "addr" is the address of the [previous] allocation):
+{{{
+    func new(uint addr, byte size): uint { ... } // allocates memory and returns the address.
+    func delete(uint addr, byte size) { ... } // frees previously allocated memory.
+    // NOTE: 'delete' may be omitted for garbage-collecting environments.
+}}}
+Pointer-values can then be dynamically allocated with initial values in braces, or left unitialized:
+{{{
+   *byte x = new byte{5}; // initialized to 5
+   *byte y = new byte;    // uninitialized
+}}}
+
+== Interpreted Aspects ==
+
+Antelope uses data-flow and liveness analysis to predict which values and computations can be precomputed, simplified, or circumvented altogether. This includes storing `final` references as static allocations, deciding when to inline function-code, and removing variables and constructs which can be entirely circumvented.
+
+The $ operator designates entities to be "interpreted" by performing the aforementioned optimizations with a higher priority, and giving a compilation error if such an entity cannot be evaluated at compile-time. The $ operator designates:
+ * Variables for which the value must be known whenever it is used.
+ * Functions and function-calls which must be inlined and have no runtime computations.
+ * Flow-control constructs which must be interpreted (i.e. conditions and jumps removed).
+
+== Inline Assembly ==
+
+The assembly command allows for the inlining of assembly code (`assembly "assembly code";`). The addresses of variables and other entities can be inserted into the assembly code by separating each item with commas (e.g. `assembly " LD A," someVarNamedThis;`). The `#assembly` directive (used within an `#environment` block) behaves the same way, except that the associated code comes before anything else in the program (see "File-Level Declarations").
+
+<br>
+----
+= Functions & Methods =
+----
+<br>
+
+*Functions* contain a block of code that can be called from anywhere else in the program. Local function values are "saved" in the system stack when necessary to avoid collisions with recursive calls. Values are passed to and returned from functions via registers as determined by the compiler. Functions cannot be declared inside of other functions (_but see "Cofuncs" for an example of *closures*_). Functions are declared with the "func" keyword, followed by the name of the function, followed by its arguments listed in parenthesis. Return values (if any) are indicated with a colon followed by the return type(s):
+{{{
+   func plain() { ............. } // 0 args, 0 returns: plain();
+   func both(int x, y) { ...... } // 2 args, 0 returns: both(5,6);
+   func give(int i): byte { ... } // 1 arg,  1 return:  byte b = give(300);
+   func two():(char,char) { ... } // 0 args, 2 returns: char (x,y) = two();
+
+   // Defualt values must come "last":
+   func x(int a, b=5, c=6) { ... }
+   x(1,2,3); // (call as stated)
+   x(1,2);  // becomes x(1,2,6);
+   x(1);   // becomes x(1,5,6);
+}}}
+
+*Function pointers* are declared like nameless functions, followed by a variable name. They can point to named functions or anonymous functions which are declared on the spot:
+{{{
+   func(int,char):bool w; // w points to a func(int,char):bool
+   func():(int,int) x;    // x points to a func():(int,int)
+   func(int) y;           // y points to a func(int)
+   func() z;              // z points to a func()
+
+   y = func(int a, int b) { ... } // y points to this anonymous function
+   func t(int c,int d){...}; y=t; // Now y points to function t instead
+   y(5,'J');                      // t(5,'J') is invoked (called) via y
+}}}
+
+*Lambda Expressions* are a shorthand for writing anonymous functions as compact expressions. The omitted datatypes (T) are inferred from the context in which they are used. The parenthesis are optional for the one-argument form:
+{{{
+   (a,b) => a+b; // func(T a, b):T { return a+b; }
+     (x) => x*x; // func(T x):T { return x*x; }
+      () => x;   // func():T { return x; }
+}}}
+
+*Methods* are functions declared with a receiving-type (struct, cofunc, or interface) "dotted" to the function name. Methods are stored as functions with an invisible first argument called "this", which is a pointer to the calling entity. The members of the calling entity can be accessed directly (i.e. "this." is implicit):
+{{{
+   struct Foo { int x,y; } // see "structs"
+
+   func Foo.divide():int { // Foo.divide is a func(*Foo):int
+      return x/y; // short for this.x/this.y
+   }
+
+   f := Foo{10,5}; // see "structs"
+
+   f.divide(); // short for Foo.divide(f)
+   func(*Foo):int fp = Foo.divide;
+   fp(f); // also calls Foo.divide(f)
+}}}
+
+*Method Pointers* are function pointers which act as methods for the containing struct. This functionality is enabled by declaring the first argument as "this", indicating that the _containing_ entity is also the _calling_ entity:
+{{{
+   struct Foo { // (see "structs")
+      int x, y;
+      func(this) mp; // same type as f, but as a method
+      func(*Foo) fp; // plain func-pointer (not a method)
+   }
+
+   func Foo.divide():int { return x/y; }
+
+   f := Foo{1, 2, Thing.divide, Thing.divide};
+
+   f.fp(f); // same idea as Foo.divide(f)
+   f.mp();  // same idea as f.divide()
+}}}
+
+<br>
+----
+= Structs, Cofuncs, Interfaces =
+----
+<br>
+
+== Structs ==
+
+Structs are aggregate types which may only contain (non-static) data-members, and are initialized like arrays:
+{{{
+   struct Foo { byte b; int i; } // Defines "Foo" as a {byte, int} allocation
+   f := Foo{10, 260};      // Declare f as a Foo of {10,260}
+   f.b = 7;          // Fields can be accessed/modified individually
+}}}
+
+*Default values* may be provided to struct members, as long as all members with default values are at the "end" of the struct. These members may be left out of the initialization list, in which case the default values are used:
+{{{
+   struct Foo {
+      int a, b;
+      int sum = a+b+c+d; // default can be an expression
+      int c, d = 40, 50;
+   }
+
+   f1 := Foo{1,2,3,4,5}; // as stated
+   f2 := Foo{1,2,3,4};   // Foo{1,2,3,4,50}
+   f2 := Foo{1,2,3};     // Foo{1,2,3,40,50}
+   f3 := Foo{1,2};       // Foo{1,2,93,40,50} (1+2+40+50=93)
+}}}
+
+*Anonymous fields* can be used to "inherit" all the data and functionality from one struct into another. The members and methods of anonymous fields can be accessed directly via the containing struct as if they belonged directly to the containing struct (However, the containing struct may hide these by defining its own members or methods of the same name(s)). An anonymous field id denoted by a type without a name, and can be referred to separately by using the type _as_ its name:
+{{{
+   struct Foo { int a,b; }
+   struct Bar { Foo; int c; }
+
+   func Bar.sum():int {
+      return a+b+c; // short for this.Foo.a + this.Foo.b + this.c
+   }
+
+   b := Bar{Foo{1,2},3} // anonymous field is still one member
+   f := b.Foo;     // Can still access the "Foo" in b this way
+}}}
+
+The following rules help prevent naming collisions:
+ # Multiple anonymous fields cannot have the same type.
+ # When different anonymous fields of the same type exist at different "levels", then the one at the highest level is the one accessed directly (others can be accessed specifically).
+ # If multiple anonymous fields of the same type exist at the same "level" (but in different structs), then neither can be accessed directly:
+{{{
+   struct A { int x; }
+   struct B { int x, y; }
+   struct C { A; B; int y; }
+
+   c := C{A{1},B{2,3},4};
+
+   c.x;   // INVALID (is it c.A.x or c.B.x?)
+   c.B.x; // 2
+   c.A.x; // 1
+   c.y;   // 4 (hides c.B.y)
+   c.B.y; // 3
+
+   a := c.A; // can still get at the "A" and "B" in c
+   b := c.B;
+}}}
+
+== Cofuncs ==
+
+Cofunctions are function-objects which can be called like functions, but store data between calls (like structs). The `yield` command is used to return values, but continue from the same spot on the next call:
+{{{
+   // Using yield to simulate a generator
+   cofunc RotatingSeq(int add): int {
+      int last = add; // last will be stored internally
+      yield add;
+      yield add+last;
+      yield add-last; // next call starts back at top
+   }
+
+   r := RotatingSeq{};
+   r(1); // yields 1
+   r(2); // yields (2+1) = 3
+   r(3); // yields (3-1) = 2
+   r(4); // (starts over) = 4
+}}}
+
+Cofuncs can be defined directly inside of structs to allow the struct and the cofunc to share information directly. Anonymous cofuncs cause the containing struct to act as if it were the cofunc:
+{{{
+   // simulating a closure on x
+   struct Counter {
+      int x;
+      cofunc():int { // anonymous cofunc
+         x = x+1;
+         return x;
+      }
+   }
+
+   c := Counter{3}
+   c(); c(); c(); // 4,5,6
+   c.x = 10;
+   c(); // 11
+
+   struct Two {
+      cofunc f(int x) {
+         yield x;
+         yield g(x);
+      }
+      cofunc g(int x) {
+         int y = 0;
+         while(true) {
+            y += x;
+            yield y;
+         }
+      }
+   }
+
+   t := Two{};
+   t.g(1); t.g(1); t.g(1); // 1,2,3
+   t.f(1); t.f(1); t.f(1); // 1,4,1
+   t.g(1); // 5
+}}}
+
+The compiler accomplishes all of this by making the following modifications:
+ # The underlying function a method (takes an implicit "this" pointer to a cofunc-instance).
+ # Each cofunc-instance is stored as a tail-call (a "goto") to the underlying function (thus allowing the cofunc to be called _as if it was the function itself_), followed by any information needing to be stored between calls. When a confunc is embedded directly within a struct, this information is stored as part of the struct itself.
+ # When the `yield` command is used, the underlying function directly modifies the tail-call in the cofunc to jump to where the function left off (rather than to the start of the function).
+
+== Interfaces ==
+
+Interfaces define datatypes representing any entity which has a certain set of methods. An interface is defined simply by listing the signature of each method in the set (and nothing else). For example, a "Printer" could be defined as anything with a "print" method, and a "Communicator" as anything with a "read" and a "print" method (these can be method-pointers or normal methods):
+{{{
+   struct X { byte b; }
+   struct Y { char c; }
+
+   func X.read(): []char { ... }
+   func X.print() { ...code to print b... }
+   func Y.print() { ...code to print "Hello!"... }
+
+   interface Communicator {
+      read(): []char;
+      print();
+   }
+
+   interface Printer { print() }
+
+   func usePrinter(Printer p) {
+      p.print();
+   }
+
+   func useCom(Communicator c): []char {
+      c.print();
+      return c.read();
+   }
+
+   x := X{5};
+   y := Y{'Q'};
+   usePrinter(x); // prints 5
+   usePrinter(y); // prints "Hello!"
+   msg := useCom(x); // prints 5, returns x.read()
+
+   // Interface instances can even be created directly:
+
+   Printer p = x;
+   p.print();
+   p = y;
+   p.print();
+}}}
+
+Interfaces variables contain a pointer to the struct representing the interface (the "this"), and a pointer to an array of method-pointers (or just a pointer to a method, if the interface only use one method). For added flexibility, Antelope allows interfaces to be overloaded with alternate values and methods:
+{{{
+   struct imitator { int x, y; }
+
+   func imitator.blah() { ... }
+   func imitator.flah(): []char { ... }
+
+   i := imitator{1,2};
+   c := Communicator{i, i.flah, i.blah};
+   c.read();  // calls i.flah
+   c.print(); // calls i.blah
+}}}
+
+<br>
+----
+= Antelope Environment =
+----
+<br>
+
+== File-Level Declarations ==
+
+An Antelope source file may include some or all of the following such declarations (noting that the `#` directives are used for defining specific setups and would not appear in a typical program):
+
+{{{
+   namespace main;      // Declare the file namespace "main"
+   environment = ti83p; // Specify ti83p as the environment to use
+
+   #include "filename"  // Include code from another file
+
+   #environment ti83p   // Define an environment called "ti83p"
+      #include "others" // include "others" (ONLY if ti83p is used)
+      #assembly " ... " // Assembly code to insert prior to main()
+      #allocate "addr1"  x  // Allocate at "addr1" (maximum of [x] bytes)
+      #allocate "addr2" -x  // Allocate at "addr2" (grow DOWN to [x] bytes)
+      /* -- Code for ENV1 only -- */
+   #end // End of ti83p definition
+
+   /* -- General code -- */
+
+   #for env1 env2
+      /* -- Code for env1 or env2 environments only -- */
+   #end
+}}}
+
+*Namespace declarations* package all code entities in the file under a specified name (identifier). Only entities which start with a capital letter will be accessible from outside of the namespace (using "namespaceName.entityName" syntax); all other entities are only accessible within the namespace. Multiple files may use the same namespace, but only one namespace may be used per file. Entities (variables, functions, structs, etc.) must not have the same name as namespaces.
+
+*Environment declarations* define attributes for a particular environment (e.g. an underlying Operating System). Everything in an declaration environment is ignored unless that particular environment is used. Multiple environment definitions may appear in one or more files, but only one environment can be used per compilation (specified using "`environment = ...`", or as an argument to the compiler). Nested environment definitions are ignored. Environment attributes are specified by:
+ * Including other files containing relevant code (_`#include`_).
+ * Declaring assembly code to be placed at the beginning of the compiled program (only allowed in environment blocks: _`#assembly`_).
+ * Specifying external memory locations which the compiler may use to allocate larger variables (only allowed in environment blocks: _`#allocate`_).
+ * Declaring any other Antelope code ("Code for env1 or env2 only") for the environment.
+ * Sections of code for use only with specific environment(s) can be declared either within the environment declaration or within a _`#for ... #end`_ block.
+
+== Compiler Interface ==
+
+Every major aspect of the compiler (tokenization, preprocessing, parse-trees, etc.) will be modularized, serializable, and invokable as an API packaged into a JAR file. The Jar file will be executable: As a program, the compiler will take command-line arguments specifying files to compile, directories to use, namespace and environment related options, and possibly requests to only run certain portions of compilation. This design will allow the compiler to function as a standalone compiler, or to be interfaced with a higher-level editing environment; or to be used as a Java API to design a more complex system that has direct control over the compilation process (for example, what BlueJ does with Java).
+
+<br>
+----
+= Final Modifications =
+=== (Changes which still need to be made to the above material) ===
+----
+<br>
+
+_(These are yet-to-make updates which belong elsewhere; but here they are for now)_
+
+Methods may be defined within structs, just as in Java/C# (compact/familiar).
+
+There will be an "`x@value`" syntax for embedding variables within array literals.
+
+Entities may not be defined within each other (e.g. no structs within structs, etc.).
+
+Expressions cannot contain variable declarations, assignments, or increment/decrement operations (these are only allowed as statements).
+
+Anonymous functions may may not refer to (non- static/const) external local variables.
+
+All code is precomputed as much as possible (without unrolling loops or recursive calls).
+
+The $ operator Requires something to be interpreted, including loops and recursive calls.
+
+Bridge methods will be inserted for multiple "inheritance" of anonymous fields, as needed.
+
+Namespaces may be nested ("Outer.Inner" syntax), and there will be a "using Namespace" mechanism.
+
+Self-Modifying code will be used with cofuncs and switch-variables (Will consider an option to disable it).
+
+Explicit variable addresses can be nominal (`@"address"`) or refer to another variable (`@x` or `@arr[n].foo`).
+
+Function pointers without any return values may point to functions with return values (e.g. func(byte) pointing to func(byte):byte).
+
+Values will be passed/returned in registers such that any two functions with the same pattern of arguments will use the same registers for them.
+
+Default arguments (and struct members) must come last, and will be embedded in functions so they can be pointed-to as their reduced versions.
+
+An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace (e.g. "List myList" rather than "ListNameSpace.ListStruct myList"). This also gives namespace values ("List.staticValue") the feel of Java/C#'s static class members.
