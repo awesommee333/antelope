@@ -403,10 +403,12 @@ Cofunctions are function-objects which can be called like functions, but store d
 {{{
    // Using yield to simulate a generator
    cofunc RotatingSeq(int add): int {
-      int last = add; // last will be stored internally
-      yield add;
-      yield add+last;
-      yield add-last; // next call starts back at top
+      do { // "do forever" loop
+         int last = add; // last will be stored internally
+         yield add;
+         yield add+last;
+         yield add-last; // next call starts back at top
+      };
    }
 
    r := RotatingSeq{};
@@ -416,45 +418,23 @@ Cofunctions are function-objects which can be called like functions, but store d
    r(4); // (starts over) = 4
 }}}
 
-Cofuncs can be defined directly inside of structs to allow the struct and the cofunc to share information directly. Anonymous cofuncs cause the containing struct to act as if it were the cofunc:
+Cofuncs can also contain data like a struct:
 {{{
-   // simulating a closure on x
-   struct Counter {
-      int x;
-      cofunc():int { // anonymous cofunc
-         x = x+1;
-         return x;
-      }
+   // Simulating a closure on x
+   cofunc Counter { int x; }():int {
+      x = x+1;
+      return x;
    }
 
    c := Counter{3}
    c(); c(); c(); // 4,5,6
    c.x = 10;
    c(); // 11
-
-   struct Two {
-      cofunc f(int x) {
-         yield x;
-         yield g(x);
-      }
-      cofunc g(int x) {
-         int y = 0;
-         while(true) {
-            y += x;
-            yield y;
-         }
-      }
-   }
-
-   t := Two{};
-   t.g(1); t.g(1); t.g(1); // 1,2,3
-   t.f(1); t.f(1); t.f(1); // 1,4,1
-   t.g(1); // 5
 }}}
 
 The compiler accomplishes all of this by making the following modifications:
- # The underlying function a method (takes an implicit "this" pointer to a cofunc-instance).
- # Each cofunc-instance is stored as a tail-call (a "goto") to the underlying function (thus allowing the cofunc to be called _as if it was the function itself_), followed by any information needing to be stored between calls. When a confunc is embedded directly within a struct, this information is stored as part of the struct itself.
+ # The underlying function is a method (takes an implicit "this" pointer to a cofunc-instance).
+ # Each cofunc-instance is stored as a tail-call (a "goto") to the underlying function (thus allowing the cofunc to be called _as if it was the function itself_), followed by any information needing to be stored between calls.
  # When the `yield` command is used, the underlying function directly modifies the tail-call in the cofunc to jump to where the function left off (rather than to the start of the function).
 
 == Interfaces ==
