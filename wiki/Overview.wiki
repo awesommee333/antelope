@@ -544,20 +544,16 @@ Every major aspect of the compiler (tokenization, preprocessing, parse-trees, et
 
 Need to add examples of templated ("generic") functions and types.
 
-Anonymous functions may may not refer to (non- static/const) external local variables.
-
-All code is precomputed as much as possible (without unrolling loops or recursive calls).
-
-The $ operator Requires something to be interpreted, including loops and recursive calls.
-
-Bridge methods will be inserted for multiple "inheritance" of anonymous fields, as needed.
+"Bridge" methods will be inserted for multiple "inheritance" of anonymous fields (when _necessary_).
 
 Namespaces may be nested ("Outer.Inner" syntax), and there will be a "using Namespace" mechanism.
 
-Function pointers without any return values may point to functions with return values (e.g. func(byte) pointing to func(byte):byte).
+An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace.
 
-Values will be passed/returned in registers such that any two functions with the same pattern of arguments will use the same registers for them.
+Functions with default arguments will have embedded initializations, so that they can be pointed-to as their reduced versions.
 
-Default arguments (and struct members) must come last, and will be embedded in functions so they can be pointed-to as their reduced versions.
+Anonymous functions which refer to (non- static/const) external local variables will have restricted use so as not to "escape" the context of its parent function.
 
-An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace (e.g. "`List myList`" rather than "`ListNameSpace.ListStruct myList`"). This also gives namespace values ("`List.staticValue`") the feel of Java/C#'s static class members.
+All code is precomputed as much as possible (without unrolling loops or recursive calls). The $ operator Requires something to be interpreted, including loops and recursive calls.
+
+Values will be passed/returned in registers such that any two functions with the same pattern of arguments will use the same registers for them. Function pointers may point to functions with "extra" return values (e.g. func(byte) pointing to func(byte):byte).
