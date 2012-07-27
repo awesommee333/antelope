@@ -542,8 +542,6 @@ Every major aspect of the compiler (tokenization, preprocessing, parse-trees, et
 ----
 <br>
 
-_(These are yet-to-make updates which belong elsewhere; but here they are for now)_
-
 Need to add examples of templated ("generic") functions and types.
 
 Anonymous functions may may not refer to (non- static/const) external local variables.
