@@ -296,11 +296,11 @@ The assembly command allows for the inlining of assembly code (`assembly "assemb
    y(5,'J');                      // t(5,'J') is invoked (called) via y
 }}}
 
-*Lambda Expressions* are a shorthand for writing anonymous functions as compact expressions. The omitted datatypes (T) are inferred from the context in which they are used. The parenthesis are optional for the one-argument form:
+*Lambda Expressions* are a shorthand for writing anonymous functions as compact expressions. Datatypes (T) are omitted, because they are inferred from the context in which they are used. The parenthesis are optional for the one-argument form:
 {{{
    (a,b) => a+b; // func(T a, b):T { return a+b; }
      (x) => x*x; // func(T x):T { return x*x; }
-      () => x;   // func():T { return x; }
+         => x;   // func():T { return x; }
 }}}
 
 *Methods* are functions declared with a receiving-type (struct, cofunc, or interface) "dotted" to the function name. Methods are stored as functions with an invisible first argument called "this", which is a pointer to the calling entity. The members of the calling entity can be accessed directly (i.e. "this." is implicit):
@@ -544,13 +544,7 @@ Every major aspect of the compiler (tokenization, preprocessing, parse-trees, et
 
 _(These are yet-to-make updates which belong elsewhere; but here they are for now)_
 
-Methods may be defined within structs, just as in Java/C# (compact/familiar).
-
-There will be an "`x@value`" syntax for embedding variables within array literals.
-
-Entities may not be defined within each other (e.g. no structs within structs, etc.).
-
-Expressions cannot contain variable declarations, assignments, or increment/decrement operations (these are only allowed as statements).
+Need to add examples of templated ("generic") functions and types.
 
 Anonymous functions may may not refer to (non- static/const) external local variables.
 
@@ -561,10 +555,6 @@ The $ operator Requires something to be interpreted, including loops and recursi
 Bridge methods will be inserted for multiple "inheritance" of anonymous fields, as needed.
 
 Namespaces may be nested ("Outer.Inner" syntax), and there will be a "using Namespace" mechanism.
-
-Self-Modifying code will be used with cofuncs and switch-variables (Will consider an option to disable it).
-
-Explicit variable addresses can be nominal (`@"address"`) or refer to another variable (`@x` or `@arr[n].foo`).
 
 Function pointers without any return values may point to functions with return values (e.g. func(byte) pointing to func(byte):byte).
 
