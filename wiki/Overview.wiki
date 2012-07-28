@@ -276,14 +276,38 @@ The assembly command allows for the inlining of assembly code (`assembly "assemb
    func both(int x, y) { ...... } // 2 args, 0 returns: both(5,6);
    func give(int i): byte { ... } // 1 arg,  1 return:  byte b = give(300);
    func two():(char,char) { ... } // 0 args, 2 returns: char (x,y) = two();
-
-   // Defualt values must come "last":
-   func x(int a, b=5, c=6) { ... }
-   x(1,2,3); // (call as stated)
-   x(1,2);  // becomes x(1,2,6);
-   x(1);   // becomes x(1,5,6);
 }}}
 
+*Default arguments* are special in Antelope, because they are embedded directly within the function as an assignment (rather than being "automatically" inserted into each call). When a default value that is _not_ used, the function is called just _after_ the corresponding default assignment. In addition to saving program space, this allows each "version" of a function to exist in its reduced form:
+{{{
+   // Defualt values must come "last":
+   func x(int a, b=5, c=6) { ... }
+
+   // Internally, x is stored as follows:
+   // (This kind of explicit nesting is NOT ACTUALLY LEGAL)
+      func x(int a) {
+         int b = 5;
+         // Execution continues into the next function:
+         func x(int a, b) {
+            int c = 6;
+            // Execution continues into the next function:
+            func x(int a, b, c) {
+               ...
+            }
+         }
+      }
+
+   x(1,2,3); // Calls the "innermost function" (the "full version")
+   x(1,2); // Like x(1,2,6), but actually calls the "middle function"
+   x(1); // Like x(1,5,6), but actually calls the "outermost function"
+
+   // Each "version" of the function is even a valid
+   // target for function pointers of the same type:
+
+   func(int,int,int) f3 = x; // f3 points to the inner function
+   func(int,int) f2 = x;    // f2 points to the middle function
+   func(int) f3 = x;       // f3 points to the inner function
+}}}
 *Function pointers* are declared like nameless functions, followed by a variable name. They can point to named functions or anonymous functions which are declared on the spot:
 {{{
    func(int,char):bool w; // w points to a func(int,char):bool
@@ -538,6 +562,29 @@ Namespaces are used to "package" source code under different names, both to prev
                   // "hidden" within its namespace.
    }
 }}}
+Each namespace may optionally contain one anonymous entity (struct, interface, cofunc, or func), which then takes on the name of the interface. For example, this is convenient for namespaces which are directly associated with a data structure:
+{{{
+   // This file defines the IntList:
+   namespace IntList;
+
+   // "IntList" refers both to this struct and to the entire namespace:
+   struct { 
+      int value = 0;
+      *IntList next = null;
+   }
+
+   func IntList.add(int v) {
+      if(next != null) { next.add(v); }
+      else { next = new IntList{v}; }
+   }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   // This file uses the IntList:
+   void main() {
+      list := IntList{1};
+      list.add(2);
+      list.add(3);
+   }
+}}}
 
 == Preprocessor Directives ==
 
@@ -563,8 +610,7 @@ Preprocessor Directives are "prerequisite" instructions to the compiler, such as
 }}}
 The `#allocate` directive specifies an assembly-coded address _outside_ of the program which the compiler _may_ use to store large uninitialized values (such as arrays). Allocation will start at the given address, and grow "upward" to the given byte-limit (or "downward" if the limit is negative).
 
-The `#assembly` directive specifies assembly code which is to be inserted at the "very top" of the program (before the "main" function and before any static initializations). Any number of arguments can be given (string literals are translated directly into assembly code; anything else must correspond to a variable, which is then translated into the assembly address of that variable).
- * Example: `#assembly " LD HL,(" someVariable ")"`
+The `#assembly` directive specifies assembly code which is to be inserted at the "very top" of the program (before the "main" function and before any static initializations). Any number of arguments can be given (string literals are translated directly into assembly code; anything else must correspond to a variable, which is then translated into the assembly address of that variable). Example: `#assembly " LD HL,(" someVariable ")"`
 
 Multiple arguments can be provided to the `#if` using the "and" (`&`), "or" (`|`), "xor" (`^`), and "not" (`!`) operators, which resolve in the same order as they do in other code. These conditionals may also be "nested":
 {{{
@@ -588,10 +634,6 @@ Every major aspect of the compiler (tokenization, preprocessing, parse-trees, et
 <br>
 
 Need to add examples of templated ("generic") functions and types.
-
-An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace.
-
-Functions with default arguments will have embedded initializations, so that they can be pointed-to as their reduced versions.
 
 Anonymous functions which refer to (non- static/const) external local variables will have restricted use so as not to "escape" the context of its parent function.
 
