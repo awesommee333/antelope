@@ -241,8 +241,8 @@ Non-precomputable static initializations are computed at runtime "before" main()
 
 The `new` and `delete` keywords dynamically allocate & deallocate memory, but must be defined via specific function declarations (where "size" is how many bytes to allocate, and "addr" is the address of the (previous) allocation):
 {{{
-    func new(uint addr, byte size): uint { ... } // allocates memory and returns the address.
-    func delete(uint addr, byte size) { ... } // frees previously allocated memory.
+    func new<T>(*T item, byte size): *T { ... } // allocates memory and returns the address.
+    func delete<T>(*T item, byte size) { ... } // frees previously allocated memory.
     // NOTE: 'delete' may be omitted for garbage-collecting environments.
 }}}
 Pointer-values can then be dynamically allocated with initial values in braces, or left unitialized:
@@ -397,6 +397,8 @@ The following rules help prevent naming collisions:
    b := c.B;
 }}}
 
+("Bridge" methods will be created automatically so that structs can use methods of their anonymous members as their own, but only when it is _absolutely necessary_ for dynamic behavior.)
+
 == Cofuncs ==
 
 Cofunctions are function-objects which can be called like functions, but store data between calls (like structs). The `yield` command is used to return values, but continue from the same spot on the next call:
@@ -497,39 +499,82 @@ Interfaces variables contain a pointer to the struct representing the interface 
 ----
 <br>
 
-== File-Level Declarations ==
+== Namespaces ==
 
-An Antelope source file may include some or all of the following such declarations (noting that the `#` directives are used for defining specific setups and would not appear in a typical program):
-
+Namespaces are used to "package" source code under different names, both to prevent "name collisions" and to encapsulate (hide) code that should not be accessed externally. Each source program may have one namespace declared at the top of the file, and multiple files may use the same namespace. Anything from another namespace is accessed with the namespace name "dotted" to the front (unless the file is "using" that namespace, which will then do this automatically). Only things which start with a Capital Letter can be accessed from other namespaces. Namespaces may be "nested":
 {{{
-   namespace main;      // Declare the file namespace "main"
-   environment = ti83p; // Specify ti83p as the environment to use
+   // This file is part of the "Animal" namespace:
+   namespace Animal;
 
-   #include "filename"  // Include code from another file
+   int Dinosaur;
+   int monkey; // monkey is not accessible outside of
+               // the "Animal" namespace (lowercase).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   // This file is part of the "Bird" namespace, which
+   // is nested within "Animal" (hence "Animal.Bird"):
+   namespace Animal.Bird;
 
-   #environment ti83p   // Define an environment called "ti83p"
-      #include "others" // include "others" (ONLY if ti83p is used)
-      #assembly " ... " // Assembly code to insert prior to main()
-      #allocate "addr1"  x  // Allocate at "addr1" (maximum of [x] bytes)
-      #allocate "addr2" -x  // Allocate at "addr2" (grow DOWN to [x] bytes)
-      /* -- Code for ENV1 only -- */
-   #end // End of ti83p definition
+   int Cardinal;
+   int dodo = monkey; // Everything in "Bird" is also
+                      // "Animal", so this is okay.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   // This file is in the "Fruit" namespace:
+   namespace Fruit;
 
-   /* -- General code -- */
+   int Apple;
+   int banana;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   // This file is not part of ANY namespace.
+   // However, it "uses" the "Fruit" namespace directly:
+   using Fruit;
 
-   #for env1 env2
-      /* -- Code for env1 or env2 environments only -- */
-   #end
+   void main() {
+      int x = Animal.Dinosaur; // Dinosaur is in Animal.
+      x = Animal.Bird.Cardinal; // etc.
+      x = Animal.monkey; // ILLEGAL: monkey is "hidden".
+      x = Apple; // The "using Fruit" at the top makes
+                 // this the same as "Fruit.Apple".
+      x = banana; // ILLEGAL: banana is nevertheless
+                  // "hidden" within its namespace.
+   }
 }}}
 
-*Namespace declarations* package all code entities in the file under a specified name (identifier). Only entities which start with a capital letter will be accessible from outside of the namespace (using "namespaceName.entityName" syntax); all other entities are only accessible within the namespace. Multiple files may use the same namespace, but only one namespace may be used per file. Entities (variables, functions, structs, etc.) must not have the same name as namespaces.
+== Preprocessor Directives ==
 
-*Environment declarations* define attributes for a particular environment (e.g. an underlying Operating System). Everything in an declaration environment is ignored unless that particular environment is used. Multiple environment definitions may appear in one or more files, but only one environment can be used per compilation (specified using "`environment = ...`", or as an argument to the compiler). Nested environment definitions are ignored. Environment attributes are specified by:
- * Including other files containing relevant code (_`#include`_).
- * Declaring assembly code to be placed at the beginning of the compiled program (only allowed in environment blocks: _`#assembly`_).
- * Specifying external memory locations which the compiler may use to allocate larger variables (only allowed in environment blocks: _`#allocate`_).
- * Declaring any other Antelope code ("Code for env1 or env2 only") for the environment.
- * Sections of code for use only with specific environment(s) can be declared either within the environment declaration or within a _`#for ... #end`_ block.
+Preprocessor Directives are "prerequisite" instructions to the compiler, such as including code from other files or conditionally ignoring a section of code. They all begin with `#` to distinguish them from other code. All arguments to a directive must be on the same line, but are otherwise separated by whitespace:
+
+{{{
+   #include "filename.ant"  // Include code from another file.
+
+   #define TI_83_PLUS // Define some identifier (as a flag only).
+
+   #if FOO // The following code is only to be included if "FOO"
+           // was defined with #define (probably in another file).
+      ...
+   #end    // Marks the end of the code for the #if directive.
+
+   #assembly "code" // Insert "code" as assembly code.
+
+   #allocate "place1" 99 // Allocate space at "place1" (up to 99 bytes)
+
+   #allocate "place2" -99 // Allocate at "place2" (grow "down" to 99 bytes)
+
+   #error "Some Message" // Signal an error with the given message.
+}}}
+The `#allocate` directive specifies an assembly-coded address _outside_ of the program which the compiler _may_ use to store large uninitialized values (such as arrays). Allocation will start at the given address, and grow "upward" to the given byte-limit (or "downward" if the limit is negative).
+
+The `#assembly` directive specifies assembly code which is to be inserted at the "very top" of the program (before the "main" function and before any static initializations). Any number of arguments can be given (string literals are translated directly into assembly code; anything else must correspond to a variable, which is then translated into the assembly address of that variable).
+ * Example: `#assembly " LD HL,(" someVariable ")"`
+
+Multiple arguments can be provided to the `#if` using the "and" (`&`), "or" (`|`), "xor" (`^`), and "not" (`!`) operators, which resolve in the same order as they do in other code. These conditionals may also be "nested":
+{{{
+   #if !FOO // If "FOO" was NOT defined...
+      #include "file" // (Only include "file" if "FOO" was not defined)
+      #if (A & B) ^ (C | D) // If Either (A and B) or (C or D), but not both...
+         ...
+      #end // end of the "inner" #if
+   #end // end of the "outer" #if
+}}}
 
 == Compiler Interface ==
 
@@ -543,10 +588,6 @@ Every major aspect of the compiler (tokenization, preprocessing, parse-trees, et
 <br>
 
 Need to add examples of templated ("generic") functions and types.
-
-"Bridge" methods will be inserted for multiple "inheritance" of anonymous fields (when _necessary_).
-
-Namespaces may be nested ("Outer.Inner" syntax), and there will be a "using Namespace" mechanism.
 
 An anonymous (nameless) struct/interface/cofunc/func within a namespace will take on the name of the namespace.
 
