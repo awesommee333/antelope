@@ -159,12 +159,12 @@ Switch-variables are used to directly modify the selected value within a switch.
 
 == Type-Casts ==
 
-A Type-cast tells the compiler to convert something to different datatype. Whenever possible, and actual conversion will be avoided (e.g. the compiler will have an operation performed in such a way that the _result_ is of the correct type; or it may try to "pick out" the relevant portion or "mask out" the irrelevant information). Type-casts are written by placing a colon and the target type after an expression:
+A Type-cast tells the compiler to convert something to different datatype. Whenever possible, and actual conversion will be avoided (e.g. the compiler will have an operation performed in such a way that the _result_ is of the correct type; or it may try to "pick out" the relevant portion or "mask out" the irrelevant information). Type-casts are written by placing an arrow and the target type after an expression:
 {{{
    int a, b;
-   (a + b : byte); // add a + b such that the result is a byte
-   (a : byte) + b; // treat a like a byte while adding
-   a + (b : byte); // treat b like a byte while adding
+   (a + b) -> byte; // add a + b such that the result is a byte
+   (a -> byte) + b; // treat a like a byte while adding
+   a + (b -> byte); // treat b like a byte while adding
 }}}
 
 == Flow-Control Constructs ==
@@ -189,11 +189,11 @@ Switches and "else-if" chains are modeled the same way: If there is a clear patt
    do { A } while(X); // Do A; repeat while X.
    do { A } until(X); // Do A; repeat until X.
 
-   do start {   // Equivalent to:
-      A         // ::: goto start; do { ... } until(X);
-   start:       // Compare to the alternatives:
-      B         // ::: B; do { A; B; } while(X);
-   } until(X);  // ::: while(true) { B; if(!X){break;} A; }
+   do {          // Equivalent to:
+       A         // ::        goto start
+    => until(X); // :: top:   B
+       B         // :: start: A
+   }             // ::        if(!X) goto top
 
    for(X; Y; Z) { ... } // X; while(Y) { ... Z }
    for(V,A,B,I) { ... } // for(V=A; V<B; V+=I) { ... }
@@ -262,7 +262,7 @@ The $ operator designates entities to be "interpreted" by performing the aforeme
 
 == Inline Assembly ==
 
-The assembly command allows for the inlining of assembly code (`assembly "assembly code";`). The addresses of variables and other entities can be inserted into the assembly code by separating each item with commas (e.g. `assembly " LD A," someVarNamedThis;`). The `#assembly` directive (used within an `#environment` block) behaves the same way, except that the associated code comes before anything else in the program (see "File-Level Declarations").
+The assembly command allows for the inlining of assembly code (`asm "assembly code";`). The addresses of variables and other entities can be inserted into the assembly code by separating each item with commas (e.g. `asm " LD A," someVarNamedThis;`). The `#assembly` directive behaves the same way, except that the associated code comes before anything else in the program (see "File-Level Declarations").
 
 <br>
 ----
@@ -314,17 +314,14 @@ The assembly command allows for the inlining of assembly code (`assembly "assemb
    func():(int,int) x;    // x points to a func():(int,int)
    func(int) y;           // y points to a func(int)
    func() z;              // z points to a func()
-
-   y = func(int a, int b) { ... } // y points to this anonymous function
-   func t(int c,int d){...}; y=t; // Now y points to function t instead
-   y(5,'J');                      // t(5,'J') is invoked (called) via y
 }}}
 
-*Lambda Expressions* are a shorthand for writing anonymous functions as compact expressions. Datatypes (T) are omitted, because they are inferred from the context in which they are used. The parenthesis are optional for the one-argument form:
+*Lambda Expressions* are used to declare anonymous functions that function-pointers can point to. Argument types, return types, and even the arguments themselves can be omitted when the context makes them clear. When the function consists of a single return statement, the body can be replaced with "=>" followed by the return-value:
 {{{
-   (a,b) => a+b; // func(T a, b):T { return a+b; }
-     (x) => x*x; // func(T x):T { return x*x; }
-         => x;   // func():T { return x; }
+   (int a,b):int { return a+b; } // Full form
+   (a,b) => a+b; // Types removed, body replaced with return value
+   func(int a,b):int f = { return a+b; } // All except body removed
+   x => 5*x; // Parentheses optional for single argument form
 }}}
 
 *Methods* are functions declared with a receiving-type (struct, cofunc, or interface) "dotted" to the function name. Methods are stored as functions with an invisible first argument called "this", which is a pointer to the calling entity. The members of the calling entity can be accessed directly (i.e. "this." is implicit):
@@ -335,27 +332,25 @@ The assembly command allows for the inlining of assembly code (`assembly "assemb
       return x/y; // short for this.x/this.y
    }
 
-   f := Foo{10,5}; // see "structs"
+   Foo f(10,5); // see "structs"
+   func(*Foo):int fp = Foo.divide;
 
    f.divide(); // short for Foo.divide(f)
-   func(*Foo):int fp = Foo.divide;
-   fp(f); // also calls Foo.divide(f)
+   fp(f); // this also calls Foo.divide(f)
 }}}
 
-*Method Pointers* are function pointers which act as methods for the containing struct. This functionality is enabled by declaring the first argument as "this", indicating that the _containing_ entity is also the _calling_ entity:
+*Virtual Methods* are declared as functions within a struct, which are stored in the struct as function-pointers, but act as methods for that struct. Virtual methods may be declared with or without a default function body:
 {{{
    struct Foo { // (see "structs")
       int x, y;
-      func(this) mp; // same type as f, but as a method
       func(*Foo) fp; // plain func-pointer (not a method)
+      func vm() { ..code.. }; // same as as fp, but acts as a method
    }
 
-   func Foo.divide():int { return x/y; }
+   Foo foo(1, 2, f => f.x + f.y);
 
-   f := Foo{1, 2, Thing.divide, Thing.divide};
-
-   f.fp(f); // same idea as Foo.divide(f)
-   f.mp();  // same idea as f.divide()
+   foo.fp(foo); // foo has to pass itself into fp
+   foo.mp();    // foo passed implicitly as "this"
 }}}
 
 <br>
@@ -366,11 +361,11 @@ The assembly command allows for the inlining of assembly code (`assembly "assemb
 
 == Structs ==
 
-Structs are aggregate types which may only contain (non-static) data-members, and are initialized like arrays:
+Structs are aggregate types which may only contain (non-static) data-members:
 {{{
-   struct Foo { byte b; int i; } // Defines "Foo" as a {byte, int} allocation
-   f := Foo{10, 260};      // Declare f as a Foo of {10,260}
-   f.b = 7;          // Fields can be accessed/modified individually
+   struct Foo { byte b; int i; } // "Foo" is a {byte, int} allocation
+   Foo f(10, 260); // Declare f as a Foo of {10, 260}
+   f.b = 7;        // Fields can be accessed/modified individually
 }}}
 
 *Default values* may be provided to struct members, as long as all members with default values are at the "end" of the struct. These members may be left out of the initialization list, in which case the default values are used:
@@ -381,44 +376,39 @@ Structs are aggregate types which may only contain (non-static) data-members, an
       int c, d = 40, 50;
    }
 
-   f1 := Foo{1,2,3,4,5}; // as stated
-   f2 := Foo{1,2,3,4};   // Foo{1,2,3,4,50}
-   f2 := Foo{1,2,3};     // Foo{1,2,3,40,50}
-   f3 := Foo{1,2};       // Foo{1,2,93,40,50} (1+2+40+50=93)
+   Foo f1(1,2,3,4,5); // as stated
+   Foo f2(1,2,3,4);   // Foo(1,2,3,4,50)
+   Foo f3(1,2,3);     // Foo(1,2,3,40,50)
+   Foo f4(1,2);       // Foo(1,2,93,40,50) (1+2+40+50=93)
 }}}
 
-*Anonymous fields* can be used to "inherit" all the data and functionality from one struct into another. The members and methods of anonymous fields can be accessed directly via the containing struct as if they belonged directly to the containing struct (However, the containing struct may hide these by defining its own members or methods of the same name(s)). An anonymous field id denoted by a type without a name, and can be referred to separately by using the type _as_ its name:
+Structs "inherit" the members their inner members, but only where such transparent does not create ambiguity. To illustrate this intention explicitly, it is legal to use datatype names as variable names:
 {{{
    struct Foo { int a,b; }
-   struct Bar { Foo; int c; }
+   struct Bar { Foo Foo; int c; }
 
    func Bar.sum():int {
       return a+b+c; // short for this.Foo.a + this.Foo.b + this.c
+          // (since Bar does not have an a or b, but Bar.Foo does) 
    }
 
-   b := Bar{Foo{1,2},3} // anonymous field is still one member
-   f := b.Foo;     // Can still access the "Foo" in b this way
+   Bar b(Foo(1,2),3);
+   Foo f = b.Foo;    // Access the "Foo" in b like anything else.
 }}}
 
-The following rules help prevent naming collisions:
- # Multiple anonymous fields cannot have the same type.
- # When different anonymous fields of the same type exist at different "levels", then the one at the highest level is the one accessed directly (others can be accessed specifically).
- # If multiple anonymous fields of the same type exist at the same "level" (but in different structs), then neither can be accessed directly:
+When multiple members contain members of the same name, or when the containing struct already has a member of that name, then neither can be accessed transparently:
 {{{
    struct A { int x; }
    struct B { int x, y; }
-   struct C { A; B; int y; }
+   struct C { A A; B B; int y; }
 
-   c := C{A{1},B{2,3},4};
+   C c(A(1),B(2,3),4);
 
    c.x;   // INVALID (is it c.A.x or c.B.x?)
    c.B.x; // 2
    c.A.x; // 1
    c.y;   // 4 (hides c.B.y)
    c.B.y; // 3
-
-   a := c.A; // can still get at the "A" and "B" in c
-   b := c.B;
 }}}
 
 ("Bridge" methods will be created automatically so that structs can use methods of their anonymous members as their own, but only when it is _absolutely necessary_ for dynamic behavior.)
@@ -437,7 +427,7 @@ Cofunctions are function-objects which can be called like functions, but store d
       };
    }
 
-   r := RotatingSeq{};
+   RotatingSeq r();
    r(1); // yields 1
    r(2); // yields (2+1) = 3
    r(3); // yields (3-1) = 2
@@ -452,7 +442,7 @@ Cofuncs can also contain data like a struct:
       return x;
    }
 
-   c := Counter{3}
+   Counter c(3);
    c(); c(); c(); // 4,5,6
    c.x = 10;
    c(); // 11
@@ -465,7 +455,7 @@ The compiler accomplishes all of this by making the following modifications:
 
 == Interfaces ==
 
-Interfaces define datatypes representing any entity which has a certain set of methods. An interface is defined simply by listing the signature of each method in the set (and nothing else). For example, a "Printer" could be defined as anything with a "print" method, and a "Communicator" as anything with a "read" and a "print" method (these can be method-pointers or normal methods):
+Interfaces define datatypes representing any entity which has a certain set of methods and data members. For example, a "Printer" could be defined as anything with a "print" method, and a "Communicator" as anything with a "read" and a "print" method (these can be method-pointers or normal methods):
 {{{
    struct X { byte b; }
    struct Y { char c; }
@@ -474,12 +464,12 @@ Interfaces define datatypes representing any entity which has a certain set of m
    func X.print() { ...code to print b... }
    func Y.print() { ...code to print "Hello!"... }
 
-   interface Communicator {
-      read(): []char;
-      print();
+   iface Communicator {
+      func read(): []char;
+      func print();
    }
 
-   interface Printer { print() }
+   iface Printer { func print(); }
 
    func usePrinter(Printer p) {
       p.print();
@@ -490,8 +480,8 @@ Interfaces define datatypes representing any entity which has a certain set of m
       return c.read();
    }
 
-   x := X{5};
-   y := Y{'Q'};
+   X x(5);
+   T y('Q');
    usePrinter(x); // prints 5
    usePrinter(y); // prints "Hello!"
    msg := useCom(x); // prints 5, returns x.read()
@@ -504,15 +494,15 @@ Interfaces define datatypes representing any entity which has a certain set of m
    p.print();
 }}}
 
-Interfaces variables contain a pointer to the struct representing the interface (the "this"), and a pointer to an array of method-pointers (or just a pointer to a method, if the interface only use one method). For added flexibility, Antelope allows interfaces to be overloaded with alternate values and methods:
+Interfaces variables contain a pointer to the struct representing the interface (the "this"), and a pointer to an array of method-pointers and data members (or just a pointer to a method, if the interface only use one method). For added flexibility, Antelope allows interfaces to be overloaded with alternate values and methods:
 {{{
-   struct imitator { int x, y; }
+   struct Imitator { int x, y; }
 
-   func imitator.blah() { ... }
-   func imitator.flah(): []char { ... }
+   func Imitator.blah() { ... }
+   func Imitator.flah(): []char { ... }
 
-   i := imitator{1,2};
-   c := Communicator{i, i.flah, i.blah};
+   Imitator i(1,2);
+   Communicator c(i, i.flah, i.blah);
    c.read();  // calls i.flah
    c.print(); // calls i.blah
 }}}
@@ -562,29 +552,6 @@ Namespaces are used to "package" source code under different names, both to prev
                   // "hidden" within its namespace.
    }
 }}}
-Each namespace may optionally contain one anonymous entity (struct, interface, cofunc, or func), which then takes on the name of the interface. For example, this is convenient for namespaces which are directly associated with a data structure:
-{{{
-   // This file defines the IntList:
-   namespace IntList;
-
-   // "IntList" refers both to this struct and to the entire namespace:
-   struct { 
-      int value = 0;
-      *IntList next = null;
-   }
-
-   func IntList.add(int v) {
-      if(next != null) { next.add(v); }
-      else { next = new IntList{v}; }
-   }
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   // This file uses the IntList:
-   void main() {
-      list := IntList{1};
-      list.add(2);
-      list.add(3);
-   }
-}}}
 
 == Preprocessor Directives ==
 
@@ -598,7 +565,7 @@ Preprocessor Directives are "prerequisite" instructions to the compiler, such as
    #if FOO // The following code is only to be included if "FOO"
            // was defined with #define (probably in another file).
       ...
-   #end    // Marks the end of the code for the #if directive.
+   #endif  // Marks the end of the code for the #if directive.
 
    #assembly "code" // Insert "code" as assembly code.
 
@@ -618,8 +585,8 @@ Multiple arguments can be provided to the `#if` using the "and" (`&`), "or" (`|`
       #include "file" // (Only include "file" if "FOO" was not defined)
       #if (A & B) ^ (C | D) // If Either (A and B) or (C or D), but not both...
          ...
-      #end // end of the "inner" #if
-   #end // end of the "outer" #if
+      #endif // end of the "inner" #if
+   #endif // end of the "outer" #if
 }}}
 
 == Compiler Interface ==
