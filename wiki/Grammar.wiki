@@ -11,7 +11,7 @@
 = The Grammar =
 ----
 <br>
-*The Antelope language grammar* is a deterministic specification of the syntax of an Antelope program. These grammar "rules" (along with other notes on this page) provide a detailed view of how the [http://en.wikipedia.org/wiki/Abstract_syntax_tree compiler internals] will be represented, both for assisting in the compiler design (each rule will be converted directly into corresponding code) and as an API reference for external tools.
+*The Antelope language grammar* is a deterministic specification of Antelope syntax. These grammar "rules" (along with other notes on this page) provide a detailed view of how the [http://en.wikipedia.org/wiki/Abstract_syntax_tree compiler internals] will be represented, both for assisting in the compiler design (each rule will be converted directly into corresponding code) and as an API reference for external tools.
 
 _For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page]._
 
@@ -21,9 +21,9 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ||<font face="arial black" color="#AAAAFF">( )</font>||Grouping of items (treat these items as one unit)||`ALL` `CAPS`||Represents anything from the corresponding rule-name||
 ||<font face="arial black" color="#AAAAFF">`*`</font>||The preceding item is repeated *zero or more* times||_`ITALIC` `CAPS`_||Partial rules separated from larger rules to save space||
 ||<font face="arial black" color="#AAAAFF">+</font>||The preceding item is repeated *one or more* times||<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||List of *one or more* items, separated with commas||
-||||||||(Everything else is actual language syntax which can be typed as shown)||
+||||||||`(Everything else is actual language syntax which can be typed as shown)`||
 
-
+==== Grammar Rules: ====
 ||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes / <font color="red">Additional Semantics</font></font> ||
 ||`COMMENT`||<font face="arial black" color="#AAAAFF">(</font> `//` <font face="arial black" color="#AAAAFF">(</font>_`NonLineBreak`_<font face="arial black" color="#AAAAFF">)`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">) | (</font> `/*` <font face="arial black" color="#AAAAFF">(</font>_`NonStarSlash`_<font face="arial black" color="#AAAAFF">)`*`</font> `*/` <font face="arial black" color="#AAAAFF">)</font>||<font color="red">(Comments may be intermixed, but are removed during preprocessing).</font>||
 ||||||<font face="arial black"> - - Top-Level Rules - -</font>||
@@ -118,24 +118,25 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ----
 <br>
 
-The order of operations designates the order in which operators are applied and expressions are evaluated. The items at the top (`1`) are evaluated first, and the items at the bottom are evaluated last. For example, "`a+b*c+d`" is the same as "`a+(b*c)+d`", because multiplication ("`*`") has priority over addition ("`+`"). This originally served as an aid in creating/revising the grammar, but I have left it here as a convenient reference (and in the spirit of open documentation):
+The order of operations designates the order in which operators are applied and expressions are evaluated. The operators at the top (`1`) are evaluated first:
 
- # `. call() idx[] (_) {_}  _++  _--`
- # `+_  -_  !_  ~_  *_  &_  new_ $ `(Right to Left)
- # `* / %`
- # `+ -`
- # `<< >> <<< >>>`
- # `< > <= >=`
- # `== !=`
- # `&`
- # `^`
- # `|`
- # `&&`
- # `||`
- # `?:`
- # `:`
- # `= *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= ()=> `(Right to Left)
- # `,`
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>`.member `<font color="#AAAAFF">`_`</font>`(call) `<font color="#AAAAFF">`_`</font>`[index] `<font color="#AAAAFF">`_`</font>`++ `<font color="#AAAAFF">`_`</font>`--`
+ # <font color="#AAAAFF">`(L◄-R)`</font>` +`<font color="#AAAAFF">`_`</font>` -`<font color="#AAAAFF">`_`</font>` !`<font color="#AAAAFF">`_`</font>` ~`<font color="#AAAAFF">`_`</font>` *`<font color="#AAAAFF">`_`</font>` $`<font color="#AAAAFF">`_`</font>` &`<font color="#AAAAFF">`_`</font>` ++`<font color="#AAAAFF">`_`</font>` --`<font color="#AAAAFF">`_`</font>
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>`->type`
+ # <font color="#AAAAFF">`(L-►R)`</font>` * / %`
+ # <font color="#AAAAFF">`(L-►R)`</font>` + -`
+ # <font color="#AAAAFF">`(L-►R)`</font>` << >> <<< >>>`
+ # <font color="#AAAAFF">`(L-►R)`</font>` < > <= >=`
+ # <font color="#AAAAFF">`(L-►R)`</font>` == !=`
+ # <font color="#AAAAFF">`(L-►R)`</font>` &`
+ # <font color="#AAAAFF">`(L-►R)`</font>` ^`
+ # <font color="#AAAAFF">`(L-►R)`</font>` |`
+ # <font color="#AAAAFF">`(L-►R)`</font>` &&`
+ # <font color="#AAAAFF">`(L-►R)`</font>` ||`
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`C`</font>` ? `<font color="#AAAAFF">`T`</font>` : `<font color="#AAAAFF">`F`</font>
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>` ??`
+ # <font color="#AAAAFF">`(L◄-R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= ()=> `
+ # <font color="#AAAAFF">`(L-►R)`</font>` ,`
 
 *Note:* In an effort to minimize side-effect related errors, Antelope only allows assignments ("`=`", "`*=`", etc.) and increment/decrement operations ("`++`" or "`--`") at the statement-level (i.e. they are *not allowed within expressions*). However, by parsing these at a level of precedence common to similar languages which _do_ allow for this (e.g. [http://en.wikipedia.org/wiki/C_(programming_language) C] or [http://en.wikipedia.org/wiki/C%2B%2B C++]), the compiler is able to identify them in their entirety _within_ expressions. This results in better error messages (e.g. recognizing "`a = b+c`" rather than just "`=`" as the illegal operation) and cleaner parsing, since "the rest" of an assignment is not "left in" for the compiler to stumble over.
 
