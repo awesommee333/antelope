@@ -120,25 +120,23 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 
 The order of operations designates the order in which operators are applied and expressions are evaluated. The operators at the top (`1`) are evaluated first:
 
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>`.member `<font color="#AAAAFF">`_`</font>`(call) `<font color="#AAAAFF">`_`</font>`[index] `<font color="#AAAAFF">`_`</font>`++ `<font color="#AAAAFF">`_`</font>`--`
- # <font color="#AAAAFF">`(L◄-R)`</font>` +`<font color="#AAAAFF">`_`</font>` -`<font color="#AAAAFF">`_`</font>` !`<font color="#AAAAFF">`_`</font>` ~`<font color="#AAAAFF">`_`</font>` *`<font color="#AAAAFF">`_`</font>` $`<font color="#AAAAFF">`_`</font>` &`<font color="#AAAAFF">`_`</font>` ++`<font color="#AAAAFF">`_`</font>` --`<font color="#AAAAFF">`_`</font>
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>` -> `<font color="#AAAAFF">`TYPE`</font>
- # <font color="#AAAAFF">`(L-►R)`</font>` * / %`
+ # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`_`</font>`.member `<font color="#AAAAFF">`_`</font>`(call) `<font color="#AAAAFF">`_`</font>`[index] `<font color="#AAAAFF">`_`</font>`++ `<font color="#AAAAFF">`_`</font>`--`
+ # <font color="#AAAAFF">`(L◄─R)`</font>` +`<font color="#AAAAFF">`_`</font>` -`<font color="#AAAAFF">`_`</font>` !`<font color="#AAAAFF">`_`</font>` ~`<font color="#AAAAFF">`_`</font>` *`<font color="#AAAAFF">`_`</font>` $`<font color="#AAAAFF">`_`</font>` &`<font color="#AAAAFF">`_`</font>` ++`<font color="#AAAAFF">`_`</font>` --`<font color="#AAAAFF">`_`</font>
+ # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`_`</font>` -> `<font color="#AAAAFF">`TYPE`</font>
+ # <font color="#AAAAFF">`(L─►R)`</font>` * / %`
  # <font color="#AAAAFF">`(L―►R)`</font>` + -`
  # <font color="#AAAAFF">`(L─►R)`</font>` << >> <<< >>>`
- # <font color="#AAAAFF">`(L-►R)`</font>` < > <= >=`
- # <font color="#AAAAFF">`(L-►R)`</font>` == !=`
- # <font color="#AAAAFF">`(L-►R)`</font>` &`
- # <font color="#AAAAFF">`(L-►R)`</font>` ^`
- # <font color="#AAAAFF">`(L-►R)`</font>` |`
- # <font color="#AAAAFF">`(L-►R)`</font>` &&`
- # <font color="#AAAAFF">`(L-►R)`</font>` ||`
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`TEST`</font>` ? `<font color="#AAAAFF">`TRUE`</font>` : `<font color="#AAAAFF">`FALSE`</font>
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`NONZERO`</font>` ?? `<font color="#AAAAFF">`OTHERWISE`</font>
- # <font color="#AAAAFF">`(L◄-R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |=`
- # <font color="#AAAAFF">`(L-►R)`</font>` ,`
-
-*Note:* In an effort to minimize side-effect related errors, Antelope only allows assignments ("`=`", "`*=`", etc.) and increment/decrement operations ("`++`" or "`--`") at the statement-level (i.e. they are *not allowed within expressions*). However, by parsing these at a level of precedence common to similar languages which _do_ allow for this (e.g. [http://en.wikipedia.org/wiki/C_(programming_language) C] or [http://en.wikipedia.org/wiki/C%2B%2B C++]), the compiler is able to identify them in their entirety _within_ expressions. This results in better error messages (e.g. recognizing "`a = b+c`" rather than just "`=`" as the illegal operation) and cleaner parsing, since "the rest" of an assignment is not "left in" for the compiler to stumble over.
+ # <font color="#AAAAFF">`(L─►R)`</font>` < > <= >=`
+ # <font color="#AAAAFF">`(L─►R)`</font>` == !=`
+ # <font color="#AAAAFF">`(L─►R)`</font>` &`
+ # <font color="#AAAAFF">`(L─►R)`</font>` ^`
+ # <font color="#AAAAFF">`(L─►R)`</font>` |`
+ # <font color="#AAAAFF">`(L─►R)`</font>` &&`
+ # <font color="#AAAAFF">`(L─►R)`</font>` ||`
+ # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`TEST`</font>` ? `<font color="#AAAAFF">`TRUE`</font>` : `<font color="#AAAAFF">`FALSE`</font>
+ # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`NONZERO`</font>` ?? `<font color="#AAAAFF">`OTHERWISE`</font>
+ # <font color="#AAAAFF">`(L◄─R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |=`
+ # <font color="#AAAAFF">`(L─►R)`</font>` ,`
 
 <br>
 ----
@@ -146,9 +144,7 @@ The order of operations designates the order in which operators are applied and 
 ----
 <br>
 
-As the compiler parses (reads and "understands") source code, a representation of each element of code is stored in one of several predefined Java [http://en.wikipedia.org/wiki/Class_(computer_programming) classes]. These classes are nested within each other to form a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree]: a representation of a program which can be analysed directly (e.g. instead of having a bunch of text, the compiler ends up with a collection of every entity in the program, each of which has a collection of all of its own contents, etc.). As the compiler finishes parsing a section of code corresponding to a particular grammar rule, the result is stored as an instance of a Java class representing the corresponding code that was given for that rule. These class instances are propagated back up the "rule-chain" (parsing code), with new class instances only being added as additional operations/statements/etc. are encountered (or when data representation needs to change; see the "`*foo.bar`" example in the "Example Wlakthrough" section).
-
-Additionally, since the compiler will be packaged as a ".jar" file, it will serve both as an executable compiler and as an accessible API _of_ the compiler. These classes will thus be available for direct use, along with other public methods of the compiler. This will allow external tools to have the compiler generate a syntax tree from code, or build a syntax tree manually and have the compiler finish compiling it (e.g. an editor which allows you to build a program objectively rather than textually), or intercept the resulting assembly code of a compiled program (which will be stored per function/struct/etc. entity) for further processing, etc.
+As the compiler parses source code (as prescribed by the rules above), it will build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree]. Each Node in the tree will represent an element of code (an expression, control-construct, function, etc.) which can be analysed directly. This will allow the compiler to verify code correctness, pre-compute & optimize parts of a program, and then convert it all into assembly code (which is then assembled into an executable program).
 
 *Conventions*:
  * Syntax:_` ClassName { `*`Datatype`*` Member1Name; `*`DataType`*` Member2Name; }`_
