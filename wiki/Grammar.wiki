@@ -27,10 +27,10 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes / <font color="red">Additional Semantics</font></font> ||
 ||`COMMENT`||<font face="arial black" color="#AAAAFF">(</font> `//` <font face="arial black" color="#AAAAFF">(</font>_`NonLineBreak`_<font face="arial black" color="#AAAAFF">)`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">) | (</font> `/*` <font face="arial black" color="#AAAAFF">(</font>_`NonStarSlash`_<font face="arial black" color="#AAAAFF">)`*`</font> `*/` <font face="arial black" color="#AAAAFF">)</font>||<font color="red">(Comments may be intermixed, but are removed during preprocessing).</font>||
 ||||||<font face="arial black"> - - Top-Level Rules - -</font>||
-||`SOURCE`||<font face="arial black" color="#AAAAFF">(</font> `NAMESPACE` <font face="arial black" color="#AAAAFF">|</font> `USING` <font face="arial black" color="#AAAAFF">|</font> _`SRC`_ <font face="arial black" color="#AAAAFF">)`*`</font>||The top-level of program source code.||
-||> _`SRC`_||<font face="arial black" color="#AAAAFF">(</font> _`PP_DIR`_ <font face="arial black" color="#AAAAFF">|</font> `INIT` <font face="arial black" color="#AAAAFF">|</font> _`ADT`_ <font face="arial black" color="#AAAAFF">|</font> `FUNC` <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">[</font> `VARDEC` <font face="arial black" color="#AAAAFF">|</font> `CONST` <font face="arial black" color="#AAAAFF">]</font> `;` <font face="arial black" color="#AAAAFF">)`*`</font>||Source code allowed within "`#if`" blocks (all but `NAMESPACE` or `USING`).||
+||`SOURCE`||<font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">[</font> `NAMESPACE` <font face="arial black" color="#AAAAFF">[</font> `USING` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">]</font> _`SRC`_ <font face="arial black" color="#AAAAFF">)`*`</font>||The top-level of program source code.||
 ||`NAMESPACE`||`namespace` <font face="arial black" color="#AAAAFF">(</font> `P_ID` `.` <font face="arial black" color="#AAAAFF">)`*`</font> `P_DT` `;`||Namespace declaration.||
 ||`USING`||`using` <font face="arial black" color="#AAAAFF">[</font> `IDENT` `=` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `P_ID` `.` <font face="arial black" color="#AAAAFF">)`*`</font> `P_ID` `;`||Namespace-"Using"/Aliasing.||
+||> _`SRC`_||<font face="arial black" color="#AAAAFF">(</font> _`PP_DIR`_ <font face="arial black" color="#AAAAFF">|</font> `INIT` <font face="arial black" color="#AAAAFF">|</font> _`ADT`_ <font face="arial black" color="#AAAAFF">|</font> `FUNC` <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">[</font> `VARDEC` <font face="arial black" color="#AAAAFF">|</font> `CONST` <font face="arial black" color="#AAAAFF">]</font> `;` <font face="arial black" color="#AAAAFF">)`*`</font>||Source code allowed within "`#if`" blocks (all but `NAMESPACE` or `USING`).||
 ||> _`PP_DIR`_||`PP_INC` <font face="arial black" color="#AAAAFF">|</font> `PP_ASM` <font face="arial black" color="#AAAAFF">|</font> `PP_ALLOC` <font face="arial black" color="#AAAAFF">|</font> `PP_ERR` <font face="arial black" color="#AAAAFF">|</font> `PP_DEF` <font face="arial black" color="#AAAAFF">|</font> `PP_IF`||Preprocessor Directives. <font color="red">All contents (other than _`SRC`_) must be on the same line of code.</font>||
 ||`PP_INC`||`#include` `STRING`||Include source code from another file or url.||
 ||`PP_ALLOC`||`#allocate` `STRING` <font face="arial black" color="#AAAAFF">[</font> `EXPR` <font face="arial black" color="#AAAAFF">]</font>||Designate a "Safe-RAM" Allocation (used for static initializations).||
@@ -118,25 +118,27 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ----
 <br>
 
-The order of operations designates the order in which operators are applied and expressions are evaluated. The operators at the top (`1`) are evaluated first:
+Operators are evaluated (bound) in order from top (`1`) to bottom (`17`):
 
- # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`_`</font>`.member `<font color="#AAAAFF">`_`</font>`(call) `<font color="#AAAAFF">`_`</font>`[index] `<font color="#AAAAFF">`_`</font>`++ `<font color="#AAAAFF">`_`</font>`--`
- # <font color="#AAAAFF">`(L◄─R)`</font>` +`<font color="#AAAAFF">`_`</font>` -`<font color="#AAAAFF">`_`</font>` !`<font color="#AAAAFF">`_`</font>` ~`<font color="#AAAAFF">`_`</font>` *`<font color="#AAAAFF">`_`</font>` $`<font color="#AAAAFF">`_`</font>` &`<font color="#AAAAFF">`_`</font>` ++`<font color="#AAAAFF">`_`</font>` --`<font color="#AAAAFF">`_`</font>
- # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`_`</font>` -> `<font color="#AAAAFF">`TYPE`</font>
- # <font color="#AAAAFF">`(L─►R)`</font>` * / %`
- # <font color="#AAAAFF">`(L―►R)`</font>` + -`
- # <font color="#AAAAFF">`(L─►R)`</font>` << >> <<< >>>`
- # <font color="#AAAAFF">`(L─►R)`</font>` < > <= >=`
- # <font color="#AAAAFF">`(L─►R)`</font>` == !=`
- # <font color="#AAAAFF">`(L─►R)`</font>` &`
- # <font color="#AAAAFF">`(L─►R)`</font>` ^`
- # <font color="#AAAAFF">`(L─►R)`</font>` |`
- # <font color="#AAAAFF">`(L─►R)`</font>` &&`
- # <font color="#AAAAFF">`(L─►R)`</font>` ||`
- # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`TEST`</font>` ? `<font color="#AAAAFF">`TRUE`</font>` : `<font color="#AAAAFF">`FALSE`</font>
- # <font color="#AAAAFF">`(L─►R)`</font>` `<font color="#AAAAFF">`NONZERO`</font>` ?? `<font color="#AAAAFF">`OTHERWISE`</font>
- # <font color="#AAAAFF">`(L◄─R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |=`
- # <font color="#AAAAFF">`(L─►R)`</font>` ,`
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>`.member `<font color="#BBBBBB">`_`</font>`(call) `<font color="#BBBBBB">`_`</font>`[index] `<font color="#BBBBBB">`_`</font>`++ `<font color="#BBBBBB">`_`</font>`--`
+ # <font color="#BBBBBB">`(L◄─R)`</font>` +`<font color="#BBBBBB">`_`</font>` -`<font color="#BBBBBB">`_`</font>` !`<font color="#BBBBBB">`_`</font>` ~`<font color="#BBBBBB">`_`</font>` *`<font color="#BBBBBB">`_`</font>` $`<font color="#BBBBBB">`_`</font>` &`<font color="#BBBBBB">`_`</font>` ++`<font color="#BBBBBB">`_`</font>` --`<font color="#BBBBBB">`_`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>` -> `<font color="#BBBBBB">`TYPE`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` * / %`
+ # <font color="#BBBBBB">`(L―►R)`</font>` + -`
+ # <font color="#BBBBBB">`(L─►R)`</font>` << >> <<< >>>`
+ # <font color="#BBBBBB">`(L─►R)`</font>` < > <= >=`
+ # <font color="#BBBBBB">`(L─►R)`</font>` == !=`
+ # <font color="#BBBBBB">`(L─►R)`</font>` &`
+ # <font color="#BBBBBB">`(L─►R)`</font>` ^`
+ # <font color="#BBBBBB">`(L─►R)`</font>` |`
+ # <font color="#BBBBBB">`(L─►R)`</font>` &&`
+ # <font color="#BBBBBB">`(L─►R)`</font>` ||`
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`TEST`</font>` ? `<font color="#BBBBBB">`TRUE`</font>` : `<font color="#BBBBBB">`FALSE`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`NONZERO`</font>` ?? `<font color="#BBBBBB">`OTHERWISE`</font>
+ # <font color="#BBBBBB">`(L◄─R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |=`
+ # <font color="#BBBBBB">`(L─►R)`</font>` ,`
+
+Lambdas bind first on the left and last on the right: <font color="#888888">`-A => B = C`</font> is <font color="#888888">`-(A => (B = C))`</font>.
 
 <br>
 ----
