@@ -11,33 +11,19 @@
 = The Grammar =
 ----
 <br>
-*The Antelope language grammar* is a deterministic outline of every element of a program, from top level elements such as functions and structures down to the smallest elements of an expression. Though this grammar serves as an exact documentation of Antelope syntax, its primary purpose is as a reference to make coding the compiler much easier. These grammar "rules" (along with other notes on this page) provide a detailed view of how the [http://en.wikipedia.org/wiki/Abstract_syntax_tree compiler internals] will be represented -- both for compiler design and as an API reference for external tools.
+*The Antelope language grammar* is a deterministic specification of the syntax of an Antelope program. These grammar "rules" (along with other notes on this page) provide a detailed view of how the [http://en.wikipedia.org/wiki/Abstract_syntax_tree compiler internals] will be represented, both for assisting in the compiler design (each rule will be converted directly into corresponding code) and as an API reference for external tools.
 
-For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page].
+_For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page]._
 
-=== Conventions Used:===
+==== Conventions Used: ====
+||<font face="arial black" color="#AAAAFF">|</font>||Separates alternate options ("OR")||Sub<font face="arial black" color="#AAAAFF">,,1,,</font>Scripts<font face="arial black" color="#AAAAFF">,,2,,</font>||Used for reference in distinguishing similar items||
+||<font face="arial black" color="#AAAAFF">[ ]</font>||Optional items (these items can be omitted)||_Italic text_||Only a _description_ of valid syntax||
+||<font face="arial black" color="#AAAAFF">( )</font>||Grouping of items (treat these items as one unit)||`ALL` `CAPS`||Represents anything from the corresponding rule-name||
+||<font face="arial black" color="#AAAAFF">`*`</font>||The preceding item is repeated *zero or more* times||_`ITALIC` `CAPS`_||Partial rules separated from larger rules to save space||
+||<font face="arial black" color="#AAAAFF">+</font>||The preceding item is repeated *one or more* times||<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||List of *one or more* items, separated with commas||
+||||||||(Everything else is actual language syntax which can be typed as shown)||
 
-The <font face="arial black" color="#AAAAFF">gray bold</font> marks denote grammar symbols which are not actually part of the language syntax:
- * <font face="arial black" color="#AAAAFF">|</font>` - `Separates alternate options ("OR").
- * <font face="arial black" color="#AAAAFF">[ ]</font>` - `Optional items (these items can be omitted).
- * <font face="arial black" color="#AAAAFF">( )</font>` - `Grouping of items (treat these items as one unit).
- * <font face="arial black" color="#AAAAFF">`*`</font>` - `The preceding item is repeated *zero or more* times.
- * <font face="arial black" color="#AAAAFF">+</font>` - `The preceding item is repeated *one or more* times.
- * <font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>` - `List of *one or more* items, separated with commas.
- * Sub<font face="arial black" color="#AAAAFF">,,1,,</font>Scripts<font face="arial black" color="#AAAAFF">,,2,,</font>` - `Used for reference among similar items.
 
-Everything else denotes actual syntactic elements of code:
- * _Italic text_` - `Only a _description_ of valid syntax.
- * `ALL` `CAPS - `Represents anything from the corresponding rule-name.
- * _`ITALIC` `CAPS`_` - `Partial rules separated from larger rules to save space.
- * Everything else is actual language syntax which can be typed as shown.
-
-=== Additional Notes:===
- * These grammar rules are applied _after_ preprocessing (which includes namespace declarations and directives such as `#include`).
- * The "<font color="red">Additional Semantics</font>" are extra requirements which are not (or could not be) covered by a grammar rule alone.
- * Every grammar rule (and its "additional semantics") will be converted directly into the compiler code to handle the corresponding source.
- * Some rules rely on broader rules than they actually need (e.g. using `EXPR` where only an `IDENT` is needed), but then have "additional semantics" requiring that the result match a narrower rule. This is done so that the compiler can more accurately process larger "chunks" of code where something simple is expected, thus resulting in better error messages and "recovery" from such errors (e.g. "`Expression found where identifier expected: a+b*c`"). Likewise, this technique is intentionally _not_ done where it would result in ambiguity and prevent accurate parsing (e.g. "`TYPE`" is not _directly_ used in the "`T_CAST`" rule, so as to prevent an infinite loop).
-<br>
 ||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes / <font color="red">Additional Semantics</font></font> ||
 ||`COMMENT`||<font face="arial black" color="#AAAAFF">(</font> `//` <font face="arial black" color="#AAAAFF">(</font>_`NonLineBreak`_<font face="arial black" color="#AAAAFF">)`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">) | (</font> `/*` <font face="arial black" color="#AAAAFF">(</font>_`NonStarSlash`_<font face="arial black" color="#AAAAFF">)`*`</font> `*/` <font face="arial black" color="#AAAAFF">)</font>||<font color="red">(Comments may be intermixed, but are removed during preprocessing).</font>||
 ||||||<font face="arial black"> - - Top-Level Rules - -</font>||
