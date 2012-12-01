@@ -122,10 +122,10 @@ The order of operations designates the order in which operators are applied and 
 
  # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>`.member `<font color="#AAAAFF">`_`</font>`(call) `<font color="#AAAAFF">`_`</font>`[index] `<font color="#AAAAFF">`_`</font>`++ `<font color="#AAAAFF">`_`</font>`--`
  # <font color="#AAAAFF">`(L◄-R)`</font>` +`<font color="#AAAAFF">`_`</font>` -`<font color="#AAAAFF">`_`</font>` !`<font color="#AAAAFF">`_`</font>` ~`<font color="#AAAAFF">`_`</font>` *`<font color="#AAAAFF">`_`</font>` $`<font color="#AAAAFF">`_`</font>` &`<font color="#AAAAFF">`_`</font>` ++`<font color="#AAAAFF">`_`</font>` --`<font color="#AAAAFF">`_`</font>
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>`->type`
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>` -> `<font color="#AAAAFF">`TYPE`</font>
  # <font color="#AAAAFF">`(L-►R)`</font>` * / %`
- # <font color="#AAAAFF">`(L-►R)`</font>` + -`
- # <font color="#AAAAFF">`(L-►R)`</font>` << >> <<< >>>`
+ # <font color="#AAAAFF">`(L―►R)`</font>` + -`
+ # <font color="#AAAAFF">`(L─►R)`</font>` << >> <<< >>>`
  # <font color="#AAAAFF">`(L-►R)`</font>` < > <= >=`
  # <font color="#AAAAFF">`(L-►R)`</font>` == !=`
  # <font color="#AAAAFF">`(L-►R)`</font>` &`
@@ -133,9 +133,9 @@ The order of operations designates the order in which operators are applied and 
  # <font color="#AAAAFF">`(L-►R)`</font>` |`
  # <font color="#AAAAFF">`(L-►R)`</font>` &&`
  # <font color="#AAAAFF">`(L-►R)`</font>` ||`
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`C`</font>` ? `<font color="#AAAAFF">`T`</font>` : `<font color="#AAAAFF">`F`</font>
- # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`_`</font>` ??`
- # <font color="#AAAAFF">`(L◄-R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= ()=> `
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`TEST`</font>` ? `<font color="#AAAAFF">`TRUE`</font>` : `<font color="#AAAAFF">`FALSE`</font>
+ # <font color="#AAAAFF">`(L-►R)`</font>` `<font color="#AAAAFF">`NONZERO`</font>` ?? `<font color="#AAAAFF">`OTHERWISE`</font>
+ # <font color="#AAAAFF">`(L◄-R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |=`
  # <font color="#AAAAFF">`(L-►R)`</font>` ,`
 
 *Note:* In an effort to minimize side-effect related errors, Antelope only allows assignments ("`=`", "`*=`", etc.) and increment/decrement operations ("`++`" or "`--`") at the statement-level (i.e. they are *not allowed within expressions*). However, by parsing these at a level of precedence common to similar languages which _do_ allow for this (e.g. [http://en.wikipedia.org/wiki/C_(programming_language) C] or [http://en.wikipedia.org/wiki/C%2B%2B C++]), the compiler is able to identify them in their entirety _within_ expressions. This results in better error messages (e.g. recognizing "`a = b+c`" rather than just "`=`" as the illegal operation) and cleaner parsing, since "the rest" of an assignment is not "left in" for the compiler to stumble over.
