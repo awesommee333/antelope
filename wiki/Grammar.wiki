@@ -11,7 +11,7 @@
 = The Grammar =
 ----
 <br>
-*The Antelope language grammar* is a deterministic specification of Antelope syntax. These grammar "rules" (along with other notes on this page) provide a detailed view of how the [http://en.wikipedia.org/wiki/Abstract_syntax_tree compiler internals] will be represented, both for assisting in the compiler design (each rule will be converted directly into corresponding code) and as an API reference for external tools.
+*The Antelope language grammar* is a deterministic specification of Antelope syntax. Each grammar rule corresponds directly with a portion of compiler code, as well as the [Grammar#Syntax_Tree_Classes constructs] that the compiler will use to create an [http://en.wikipedia.org/wiki/Abstract_syntax_tree abstract representation] of the code being compiled.
 
 _For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page]._
 
