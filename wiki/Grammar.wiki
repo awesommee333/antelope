@@ -145,15 +145,13 @@ Operators are evaluated (bound) in order from top (`1`) to bottom (`17`). Lambda
 ----
 <br>
 
-As the compiler parses source code (as prescribed by the rules above), it will build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree]. Each Node in the tree will represent an element of code (an expression, control-construct, function, etc.) which can be analysed directly. This will allow the compiler to verify code correctness, pre-compute & optimize parts of a program, and then convert it all into assembly code (which is then assembled into an executable program).
+The compiler will use the following classes to build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree] as it parses source code (as prescribed by the rules above).
 
-*Conventions*:
- * Syntax:_` ClassName { `*`Datatype`*` Member1Name; `*`DataType`*` Member2Name; }`_
+ * Syntax:` ClassName { `*`Datatype`*` Member1; `*`DataType`*` Member2; }`
  * Sub-classes are hierarchically nested under their parent-classes.
  * Abstract (non-instantiable) classes are in `<`angle brackets`>`.
  * Arrays are denoted by `[`square brackets`]` after the datatype.
- * Comments (notes) are listed in green after a double-slash:
-   * <font color="green">`// this is a comment`</font>.
+ * Comments (notes) are listed in green after a double-slash: <font color="green">`// This is a comment`</font>.
 
 *The Classes:*
 
