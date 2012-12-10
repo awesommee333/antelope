@@ -119,7 +119,7 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ----
 <br>
 
-Operators are evaluated (bound) in order from top (`1`) to bottom (`17`):
+Operators are evaluated (bound) in order from top (`1`) to bottom (`17`). Lambdas bind stronger on the left ( <font color="#BBBBBB">`_`</font>`=>` ) than on the right ( `=>`<font color="#BBBBBB">`_`</font> ).
 
  # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>`.member `<font color="#BBBBBB">`_`</font>`(call) `<font color="#BBBBBB">`_`</font>`[index] `<font color="#BBBBBB">`_`</font>`++ `<font color="#BBBBBB">`_`</font>`-- `<font color="#BBBBBB">`_`</font>`=>`
  # <font color="#BBBBBB">`(L◄─R)`</font>` +`<font color="#BBBBBB">`_`</font>` -`<font color="#BBBBBB">`_`</font>` !`<font color="#BBBBBB">`_`</font>` ~`<font color="#BBBBBB">`_`</font>` *`<font color="#BBBBBB">`_`</font>` $`<font color="#BBBBBB">`_`</font>` &`<font color="#BBBBBB">`_`</font>` ++`<font color="#BBBBBB">`_`</font>` --`<font color="#BBBBBB">`_`</font>
@@ -138,8 +138,6 @@ Operators are evaluated (bound) in order from top (`1`) to bottom (`17`):
  # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`NONZERO`</font>` ?? `<font color="#BBBBBB">`OTHERWISE`</font>
  # <font color="#BBBBBB">`(L◄─R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= =>`<font color="#BBBBBB">`_`</font>
  # <font color="#BBBBBB">`(L─►R)`</font>` ,`
-
-Lambdas bind first on the left and last on the right: <font color="#888888">`-A => B = C`</font> is <font color="#888888">`-(A => (B = C))`</font>.
 
 <br>
 ----
