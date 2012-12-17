@@ -147,40 +147,59 @@ Operators are evaluated (bound) in order from top (`1`) to bottom (`17`). Lambda
 
 The compiler will use the following classes to build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree] as it parses source code (as prescribed by the rules above).
 
+==== Conventions Used: ====
+
  * Syntax:` ClassName { `*`Datatype`*` Member1; `*`DataType`*` Member2; }`
  * Sub-classes are hierarchically nested under their parent-classes.
  * Abstract (non-instantiable) classes are in `<`angle brackets`>`.
  * Arrays are denoted by `[`square brackets`]` after the datatype.
  * Comments (notes) are listed in green after a double-slash: <font color="green">`// This is a comment`</font>.
 
-*The Classes:*
+==== The Classes: ====
 
- * `<Type> { `*`Expression`*`[] dims; } `<font color="green">`// A null "dim" represents a pointer`</font>
-   * `Name { `*`Token`*`[] path; } `<font color="green">`// A dotted.name.path`</font>
-   * `FuncPtr { `*`Type`*`[] args; `*`Type`*`[] ret; }`
-     * `IFunc { `*`Token`*` name; } `<font color="green">`// JUST for Interfaces`</font>
-   * `SwitchVar { `*`Token`*`[] values; }`
- * `<Entity> { `*`Boolean`*` interpet; } `<font color="green">`// Top-Level entities`</font>
-   * `Namespace { `*`Token`*` name; `*`Entity`*`[] contents; }`
-   * `Variable { `*`Token`*` name; `*`Type`*` type; `*`Expression`*` value; }`
-   * `Func { `*`Token`*` name; `*`Variable`*`[] args; `*`Type`*`[] ret; `*`Statement`*`[] states; `*`Type`*` receiver; }`
-     * <font color="green">`// receiver is the type of "this" for methods, or null for non-method functions`</font>
-   * `Cofunc { `*`Token`*` name; `*`Variable`*`[] args; `*`Type`*`[] ret; `*`Statement`*`[] states; }`
-   * `Struct { `*`Token`*` name; `*`Variable`*`[] vars; `*`Cofunc`*`[] cofuncs; }`
-   * `Interface { `*`Token`*` name; `*`IFunc`*`[] funcs; }`
-   * `Enum { `*`Token`*` name; `*`Token`*`[] values; }`
-   * `InitBlock { `*`Statement`*`[] states; } `<font color="green">`// Static Initialization block`</font>
- * `<Statement> { `*`Boolean`*` iterpret; } `<font color="green">`// Whole "pieces" of code`</font>
-   * `VarDec { `*`Type`*` type; `*`Token`*`[] vars; `*`Expression`*`[] inits; }`
-   * `Construct { `*`Token`*` kind; `*`Expression`*` condition; `*`Statement`*`[] states; }`
-   * `Command { `*`Token`*` kind; `*`Expression`*` expression; }`
-     * <font color="green">`// kind is FUNC, EQUAL, CASE, GOTO, etc.`</font>
- * `<Expression> { `*`Type`*` type; `*`Boolean`*` inParens; `*`Boolean`*` interpret; }`
-   * <font color="green">`// inParens indicates surrounding parenthesis (only used for display formatting).`</font>
-   * <font color="green">`// type is null when unknown.`</font>
-   * `Operation { `*`Token`*` kind; `*`Expression`*` lhs; `*`Expression`*` rhs; }`
-     * <font color="green">`// kind is COLON for Casts, FUNC for calls, L_BRACKET for array/struct literals`</font>
-   * `Value { `*`Token`*` value; } `<font color="green">`// A single value (number, string-literal, identifier, etc.)`</font>
+ * `Type { `*`Expression`*`[] dims; `*`Bool`*` static, const, volatile, ref; `*`BaseType`*` base; }`
+ * `<BaseType> { }`
+   * `FuncPtr { `*`Entity`*` receiver; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
+   * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` next; }`
+ * `Using { `*`Token`*` alias; `*`Entity`*` entity; }`
+ * `Context { `*`Namespace`*` namespace; `*`Using`*`[] usings; }`
+ * `TParam { `*`Token`*` name; `*`Entity`*`[] constraints; }`
+ * `Namespace { `*`TParam`*`[] params; `*`Namespace`*` parent; `*`Namespace`*`[] children; `*`Global`*`[] contents; }`
+ * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
+   * `Init { `*`Block`*` code; }`
+   * `Enum { `*`Token`*`[] values; }`
+   * `SWVar { `*`Token`*`[] values; }`
+   * `TypeDef { `*`Type`*` type; `*`Bool`*` isNew; }`
+   * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; }`
+   * `Struct { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Func`*`[] constructors; `*`Func`*` destructor; }`
+   * `<Member> { }`
+     * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` alias; `*`Expression`*` init; }`
+       *  <font color="green">`// Type can be CONST for constants`</font>
+     * `Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`
+       * `Cofunc { STRUCT struct; } `<font color="green">`// "@foo" args stored as if "Type foo@foo"`</font>
+ * `Block { `*`Statement`*`[] code; `*`Bool`*` braces; }`
+ * `<Statement> { }`
+   * `Label { `*`Token`*` name; }`
+   * `<Construct> { `*`Bool`*` ipret; `*`Block`*` code; }`
+     * `ForEach { `*`Variable`*`[] vars; `*`Bool`*` def; `*`Expression`*` start,end,inc; }`
+     * `Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`
+       *  <font color="green">`// kinds: if, switch, while, until, do, for`</font>
+       * `If { `*`Block`*` elseCode; }`
+       * `Do { `*`Token`*` logic; int condPos; }`
+       * `For { `*`Command`*` init; `*`Command`*` step; }`
+   * `<Command> { }`
+     * `VarDec { `*`Type`*` type; `*`Variable`*`[] vars; }`
+     * `Instruction { `*`Token`*` kind; `*`Expression`*` value; }`
+       *  <font color="green">`// kinds: branch, delete, =>while/until, operator (=,+=,++,etc.)`</font>
+     * `Assembly { `*`Expression`*`[] values; }`
+ * `<Expression> { `*`Bool`*` ipret; }`
+   * `Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`
+     * `Ternary { `*`Expression`*` condition; }`
+   * `Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`
+   * `Call { `*`Bool`*` isNew; `*`Expression`*`[] args; `*`Expression`*`[] inits; }`
+     *  <font color="green">`// function/constructor call`</font>
+   * `Cast { `*`Expression`*` left; `*`Type`*`[] `*`Type`*`s; }`
+   * `Value { `*`Token`*` value; }`
 
 <br>
 ----
