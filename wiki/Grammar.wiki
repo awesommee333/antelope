@@ -2,16 +2,16 @@
 
 = Table of Contents =
  * == [Grammar#The_Grammar The Grammar] ==
- * == [Grammar#Order_of_Operations Order of Operations] ==
  * == [Grammar#Syntax_Tree_Classes Syntax Tree Classes] ==
  * == [Grammar#Example_Walkthrough Example Walkthrough] ==
+ * == [Grammar#Order_of_Operations Order of Operations] ==
 
 <br>
 ----
 = The Grammar =
 ----
 <br>
-*The Antelope language grammar* is a deterministic specification of Antelope syntax. Each grammar rule corresponds directly with a portion of compiler code, as well as the [Grammar#Syntax_Tree_Classes constructs] that the compiler will use to create an [http://en.wikipedia.org/wiki/Abstract_syntax_tree abstract representation] of the code being compiled.
+*The Antelope language grammar* is a deterministic specification of Antelope syntax. Each grammar rule describes a portion of source code that the compiler can [http://en.wikipedia.org/wiki/Parsing parse] into an [Grammar#Syntax_Tree_Classes abstract representation] that the compiler can analyze and manipulate directly.
 
 _For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page]._
 
@@ -83,7 +83,7 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ||> _`ASN_OP`_||`=` <font face="arial black" color="#AAAAFF">|</font> `*=` <font face="arial black" color="#AAAAFF">|</font> `/=` <font face="arial black" color="#AAAAFF">|</font> `%=` <font face="arial black" color="#AAAAFF">|</font> `+=` <font face="arial black" color="#AAAAFF">|</font> `-=` <font face="arial black" color="#AAAAFF">|</font> `<<=` <font face="arial black" color="#AAAAFF">|</font> `>>=` <font face="arial black" color="#AAAAFF">|</font> `<<<=` <font face="arial black" color="#AAAAFF">|</font> `>>>=` <font face="arial black" color="#AAAAFF">|</font> `&=` <font face="arial black" color="#AAAAFF">|</font> `^=` <font face="arial black" color="#AAAAFF">|</font> `|=`||Assignment Operators (e.g. "`A` `+=` `B`" is shorthand for "`A` `=` `A+B`").||
 ||||||<font face="arial black"> - - Expression-Level Rules - -</font>||
 ||`EXPR`||`BIN_COND`||Any Expression.||
-||`BIN_COND`||`TERNARY`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> `?``?` `TERNARY`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Binary Conditional Operator (`thisIfThis ?? thisOtherwise`).||
+||`BIN_COND`||`TERNARY`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> `?``?` `TERNARY`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Binary Conditional Operator (`thisIfNotNullOrZero ?? thisOtherwise`).||
 ||`TERNARY`||`COND_OR` <font face="arial black" color="#AAAAFF">[</font> `?` `TERNARY`<font face="arial black" color="#AAAAFF">,,1,,</font> `:` `TERNARY`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">]</font>||(`L-►R`) Ternary Conditional Operator (`condition ? true-value : false-value`).||
 ||`COND_OR`||`COND_AND`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> `|``|` `COND_AND`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Conditional-"OR".||
 ||`COND_AND`||`BW_OR`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> `&``&` `BW_OR`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Conditional-"AND".||
@@ -115,37 +115,11 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 
 <br>
 ----
-= Order of Operations =
-----
-<br>
-
-Operators are evaluated (bound) in order from top (`1`) to bottom (`17`). Lambdas bind stronger on the left ( <font color="#BBBBBB">`_`</font>`=>` ) than on the right ( `=>`<font color="#BBBBBB">`_`</font> ).
-
- # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>`.member `<font color="#BBBBBB">`_`</font>`(call) `<font color="#BBBBBB">`_`</font>`[index] `<font color="#BBBBBB">`_`</font>`++ `<font color="#BBBBBB">`_`</font>`-- `<font color="#BBBBBB">`_`</font>`=>`
- # <font color="#BBBBBB">`(L◄─R)`</font>` +`<font color="#BBBBBB">`_`</font>` -`<font color="#BBBBBB">`_`</font>` !`<font color="#BBBBBB">`_`</font>` ~`<font color="#BBBBBB">`_`</font>` *`<font color="#BBBBBB">`_`</font>` $`<font color="#BBBBBB">`_`</font>` &`<font color="#BBBBBB">`_`</font>` ++`<font color="#BBBBBB">`_`</font>` --`<font color="#BBBBBB">`_`</font>
- # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>` -> `<font color="#BBBBBB">`TYPE`</font>
- # <font color="#BBBBBB">`(L─►R)`</font>` * / %`
- # <font color="#BBBBBB">`(L―►R)`</font>` + -`
- # <font color="#BBBBBB">`(L─►R)`</font>` << >> <<< >>>`
- # <font color="#BBBBBB">`(L─►R)`</font>` < > <= >=`
- # <font color="#BBBBBB">`(L─►R)`</font>` == !=`
- # <font color="#BBBBBB">`(L─►R)`</font>` &`
- # <font color="#BBBBBB">`(L─►R)`</font>` ^`
- # <font color="#BBBBBB">`(L─►R)`</font>` |`
- # <font color="#BBBBBB">`(L─►R)`</font>` &&`
- # <font color="#BBBBBB">`(L─►R)`</font>` ||`
- # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`TEST`</font>` ? `<font color="#BBBBBB">`TRUE`</font>` : `<font color="#BBBBBB">`FALSE`</font>
- # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`NONZERO`</font>` ?? `<font color="#BBBBBB">`OTHERWISE`</font>
- # <font color="#BBBBBB">`(L◄─R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= =>`<font color="#BBBBBB">`_`</font>
- # <font color="#BBBBBB">`(L─►R)`</font>` ,`
-
-<br>
-----
 = Syntax Tree Classes =
 ----
 <br>
 
-The compiler will use the following classes to build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree] as it parses source code (as prescribed by the rules above).
+The compiler will use the following classes to build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree] from the source code that it parses (as prescribed by the [Grammar#Grammar_Rules grammar rules]).
 
 ==== Conventions Used: ====
 
@@ -278,3 +252,29 @@ responsible for parsing (reading) designated portions of the language syntax. Th
 The <font color="blue">blue highlights</font> show how the compiler uses the classes (listed previously on this page) to store the results of each step in the parsing. Notice that not _all_ steps result in such a construction: Most of the rules will transparently pass a class entry from a lower rule to a higher rule without making any changes. However, each rule provides an _opportunity_ for a different kind of operation to be given. This allows different kinds of operations to be applied in a predefined order (e.g. multiplication before addition, as you can see where the "`*`" operation was stored within the "`+`" operation, which is not the same order that they _appear_ from left to right).
 
 Sometimes the results are switched from one class to another as they are parsed. This allows some things to be stored in a way that matches items at one level, which then turn out to be intended for another use at a higher level. For example, something like "`*foo.bar`" would at first be represented as a dereference of some "bar" entry in some "foo" structure; but then a higher context would determine that it is actually being used as a datatype (a pointer to some "bar" type from some "foo" namespace) as in "`*foo.bar x = y`". Such changes can be seen in the above example where "`uint`" starts as a *`Value`* but comes out as a *`Type`*. Likewise, since variable declarations at the namespace-level really only serve to create namespace-level variables (rather than creating and initializing them as an executable _statement_), the resulting *`VarDec`* (Variable declaration) is discarded and replaced with a *`Variable`* containing the relevant information, which is in turn stored in a *`Namespace`* entry.
+
+<br>
+----
+= Order of Operations =
+----
+<br>
+
+Operators are evaluated (bound) in order from top (`1`) to bottom (`17`). Lambdas bind stronger on the left ( <font color="#BBBBBB">`_`</font>`=>` ) than on the right ( `=>`<font color="#BBBBBB">`_`</font> ).
+
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>`.member `<font color="#BBBBBB">`_`</font>`(call) `<font color="#BBBBBB">`_`</font>`[index] `<font color="#BBBBBB">`_`</font>`++ `<font color="#BBBBBB">`_`</font>`-- `<font color="#BBBBBB">`_`</font>`=>`
+ # <font color="#BBBBBB">`(L◄─R)`</font>` +`<font color="#BBBBBB">`_`</font>` -`<font color="#BBBBBB">`_`</font>` !`<font color="#BBBBBB">`_`</font>` ~`<font color="#BBBBBB">`_`</font>` *`<font color="#BBBBBB">`_`</font>` $`<font color="#BBBBBB">`_`</font>` &`<font color="#BBBBBB">`_`</font>` ++`<font color="#BBBBBB">`_`</font>` --`<font color="#BBBBBB">`_`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`_`</font>` -> `<font color="#BBBBBB">`TYPE`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` * / %`
+ # <font color="#BBBBBB">`(L―►R)`</font>` + -`
+ # <font color="#BBBBBB">`(L─►R)`</font>` << >> <<< >>>`
+ # <font color="#BBBBBB">`(L─►R)`</font>` < > <= >=`
+ # <font color="#BBBBBB">`(L─►R)`</font>` == !=`
+ # <font color="#BBBBBB">`(L─►R)`</font>` &`
+ # <font color="#BBBBBB">`(L─►R)`</font>` ^`
+ # <font color="#BBBBBB">`(L─►R)`</font>` |`
+ # <font color="#BBBBBB">`(L─►R)`</font>` &&`
+ # <font color="#BBBBBB">`(L─►R)`</font>` ||`
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`TEST`</font>` ? `<font color="#BBBBBB">`TRUE`</font>` : `<font color="#BBBBBB">`FALSE`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` `<font color="#BBBBBB">`NONZERO`</font>` ?? `<font color="#BBBBBB">`OTHERWISE`</font>
+ # <font color="#BBBBBB">`(L◄─R)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= =>`<font color="#BBBBBB">`_`</font>
+ # <font color="#BBBBBB">`(L─►R)`</font>` ,`
