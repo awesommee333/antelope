@@ -119,7 +119,7 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ----
 <br>
 
-The compiler will use the following classes to build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree] from the source code that it parses (as prescribed by the [Grammar#Grammar_Rules grammar rules]).
+The following classes will be used to build a [http://en.wikipedia.org/wiki/Abstract_syntax_tree syntax tree] from source code parsed by the compiler.
 
 ==== Conventions Used: ====
 
