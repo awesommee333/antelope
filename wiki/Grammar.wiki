@@ -11,9 +11,10 @@
 = The Grammar =
 ----
 <br>
-*The Antelope language grammar* is a deterministic specification of Antelope syntax. Each grammar rule describes a portion of source code that the compiler can [http://en.wikipedia.org/wiki/Parsing parse] into an [Grammar#Syntax_Tree_Classes abstract representation] that the compiler can analyze and manipulate directly.
 
-_For a less technical summary of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page]._
+The Antelope language grammar consists of rules for [http://en.wikipedia.org/wiki/Parsing parsing] source code into an [Grammar#Syntax_Tree_Classes abstract representation] that can be manipulated and analyzed directly. Thus, these rules also provide a deterministic specification of Antelope syntax.
+
+_For a less technical description of Antelope, see the [http://code.google.com/p/antelope/wiki/Overview Overview page]._
 
 ==== Conventions Used: ====
 ||<font face="arial black" color="#AAAAFF">|</font>||Separates alternate options ("OR")||Sub<font face="arial black" color="#AAAAFF">,,1,,</font>Scripts<font face="arial black" color="#AAAAFF">,,2,,</font>||Used for reference in distinguishing similar items||
@@ -21,7 +22,7 @@ _For a less technical summary of Antelope, see the [http://code.google.com/p/ant
 ||<font face="arial black" color="#AAAAFF">( )</font>||Grouping of items (treat these items as one unit)||`ALL` `CAPS`||Represents anything from the corresponding rule-name||
 ||<font face="arial black" color="#AAAAFF">`*`</font>||The preceding item is repeated *zero or more* times||_`ITALIC` `CAPS`_||Partial rules separated from larger rules to save space||
 ||<font face="arial black" color="#AAAAFF">+</font>||The preceding item is repeated *one or more* times||<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||List of *one or more* items, separated with commas||
-||||||||`(Everything else is actual language syntax which can be typed as shown)`||
+||||||||`(Everything else is actual language syntax which can be typed exactly as shown)`||
 
 ==== Grammar Rules: ====
 ||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes / <font color="red">Additional Semantics</font></font> ||
