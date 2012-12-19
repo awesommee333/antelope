@@ -182,14 +182,19 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
 ----
 <br>
 
-Each grammar rule corresponds to a portion of code (within the compiler)
-responsible for parsing (reading) designated portions of the language syntax. The compiler will follow these rules (or rather, the code that these rules represent) in a [http://en.wikipedia.org/wiki/Recursive_descent_parser recursive decent] pattern in order to convert source code into an [http://en.wikipedia.org/wiki/Abstract_syntax_tree organized structure] for further analysis. As an example, we can use the grammar to trace out how the compiler would parse the following snippet of code:
+This walkthrough demonstrates how the grammar rules are followed in a [http://en.wikipedia.org/wiki/Recursive_descent_parser recursive decent pattern] to parse a snippet of code into a syntax tree.
+
+==== Conventions Used: ====
+
+ * The current grammar rule at each point is in *`BOLD_MONOSPACE`*.
+ * Rule contents are "in quotes" to separate them from other text.
+ * <font color="blue">Descriptions of how syntax classes are used are in blue.</font>
+
+==== Walkthrough: ====
 
 `uint x = a + b * c;`
 
-(Oops! This flow needs to be updated to match recent changes in the grammar. I will do so a bit later).
-
- * Since this small snippet of code can actually represent an entire program, we can start at "the top" with the "`SOURCE`" rule. Since this code represents a variable declaration, we replace "`SOURCE`" with the "`VARDEC` `;`" option, and resolve the "`VARDEC`" rule similarly:
+ * We start with *`SOURCE`*, which resolves to "<font face="arial black" color="#AAAAFF">[</font> `NAMESPACE` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `USING` <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">(</font> `INIT` <font face="arial black" color="#AAAAFF">|</font> _`ADT`_ <font face="arial black" color="#AAAAFF">|</font> `FUNC` <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">[</font>`VARDEC`<font face="arial black" color="#AAAAFF">|</font>`CONST`<font face="arial black" color="#AAAAFF">]</font> `;`  <font face="arial black" color="#AAAAFF">)`*`</font>" (source code consists of optional namespace and "using" statements, and any number of initializations, abstract datatypes, functions, variables, and constants).
    * "`VARDEC`" is replaced with the option that matches our code ("_`MODS`_ `TYPE` <font face="arial black" color="#AAAAFF">(</font> `LAMBDA`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">[</font> `@` `LAMBDA`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `=` `LAMBDA`<font face="arial black" color="#AAAAFF">,,3,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font>").
      * "_`MODS`_" resolves to "<font face="arial black" color="#AAAAFF">(</font> `static` <font face="arial black" color="#AAAAFF">|</font> `const` <font face="arial black" color="#AAAAFF">|</font> `volatile` <font face="arial black" color="#AAAAFF">)`*`</font>". This is repeated "zero times", since none of these modifiers are used.
      * "`TYPE`" resolves to "`EXPR`", which resolves directly to "`ASSIGN`".
