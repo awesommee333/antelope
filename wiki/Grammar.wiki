@@ -253,12 +253,6 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
    * <font color="blue">The *`VarDec`* is replaced with *`Variable{x, Name{uint}, Operation{+,...}}`*</font>
  * <font color="blue">The entire source is stored as *`Namespace{(none), Variable{x,...}}`*</font>
 
-*Note:* Rather than starting with code and filtering it through rules (as the compiler would), this same process can be used to build any (syntactically accurate) Antelope program from scratch!
-
-The <font color="blue">blue highlights</font> show how the compiler uses the classes (listed previously on this page) to store the results of each step in the parsing. Notice that not _all_ steps result in such a construction: Most of the rules will transparently pass a class entry from a lower rule to a higher rule without making any changes. However, each rule provides an _opportunity_ for a different kind of operation to be given. This allows different kinds of operations to be applied in a predefined order (e.g. multiplication before addition, as you can see where the "`*`" operation was stored within the "`+`" operation, which is not the same order that they _appear_ from left to right).
-
-Sometimes the results are switched from one class to another as they are parsed. This allows some things to be stored in a way that matches items at one level, which then turn out to be intended for another use at a higher level. For example, something like "`*foo.bar`" would at first be represented as a dereference of some "bar" entry in some "foo" structure; but then a higher context would determine that it is actually being used as a datatype (a pointer to some "bar" type from some "foo" namespace) as in "`*foo.bar x = y`". Such changes can be seen in the above example where "`uint`" starts as a *`Value`* but comes out as a *`Type`*. Likewise, since variable declarations at the namespace-level really only serve to create namespace-level variables (rather than creating and initializing them as an executable _statement_), the resulting *`VarDec`* (Variable declaration) is discarded and replaced with a *`Variable`* containing the relevant information, which is in turn stored in a *`Namespace`* entry.
-
 <br>
 ----
 = Order of Operations =
