@@ -201,19 +201,9 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
    * *`VARDEC`* resolves to "`TYPE` <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">[</font> _`V_INIT`_ <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `@` `EXPR`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `=` `EXPR`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">|</font> `(` <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,3,,</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `)` <font face="arial black" color="#AAAAFF">)</font> `:=` `EXPR`<font face="arial black" color="#AAAAFF">,,3,,</font>".
    * *`VARDEC`* is further reduced to just "`TYPE` `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> `=` `EXPR`<font face="arial black" color="#AAAAFF">,,2,,</font>".
      * *`TYPE`* is similarly reduced to just "`P_ID`".
-       * *`P_ID`* resolves to "`IDENT` <font face="arial black" color="#AAAAFF">[</font>`<` `TYPE`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> `>`<font face="arial black" color="#AAAAFF">]</font>".
-         * *`IDENT`* is replaced with "uint".
-             * "`VALUE`" is replaced with "`IDENT`", which is a stand-in for any identifier.
-               * "`IDENT`" is replaced with the identifier "`uint`" to match our example.
-                 * <font color="blue">Stored as *`Value{uint}`*</font>
-             * "`VALUE`" has now become "`uint`".
-           * "`T_CAST`" has become "`TERNARY`" has become "`OR`" ... has become "`uint`".
-             * The <font color="#C00">additional semantics</font> (additional requirements) of "`T_CAST`" are not applicable here, since "`:`" was not used (the optional "<font face="arial black" color="#AAAAFF">(</font> `:` `TERNARY`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>" portion was "dropped").
-           * The optional "<font face="arial black" color="#AAAAFF">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAAAFF">]</font>" portion is dropped, since it is not used.
-         * "`LAMBDA`" has now become "`uint`".
-           * The <font color="#C00">additional semantics</font> of "`LAMBDA`" are not applicable ("`=>`" not used).
-         * The optional "<font face="arial black" color="#AAAAFF">[</font> _`AOP`_ `ASSIGN` <font face="arial black" color="#AAAAFF">]</font>" is not used here.
-       * "`ASSIGN`" (and thus "`EXPR`") has now become "`uint`".
+       * *`P_ID`* is reduced to "`IDENT`".
+         * *`IDENT`* is resolved to the identifier "`uint`".
+       * *`P_ID`* has become "`uint`", stored as <font color="blue">*`Entity{"uint",{},null}`*</font>
      * "`TYPE`" has now become "`uint`".
        * <font color="blue">Stored as *`Name{uint}`* (with "`uint`" pulled out of the *Value*)</font>
        * The <font color="#C00">additional semantics</font> of "`TYPE`" require that any "`[]`" and "`*`" operations must come "first", followed by any number of "`IDENT.`" operations, and have either an `IDENT`, _`FUNCP`_ (function pointer type), or _`SW_VAR`_ (switch-variable type) at the "end" (in other words, we must have something that "looks" like a valid datatype). These requirements are met, since this instance of "`TYPE`" has now become just "`uint`", so we continue (i.e. there are no "errors").
