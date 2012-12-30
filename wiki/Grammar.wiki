@@ -25,7 +25,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||||||||`(Everything else is actual language syntax which can be typed exactly as shown)`||
 
 ==== Grammar Rules: ====
-||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes / <font color="red">Additional Semantics</font></font> ||
+||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes</font> ||
 ||||||<font face="arial black"> - - Preprocessor Rules - - </font><font color="#888888">_These rules are processed (and removed) before any other rules are applied._</font>||
 ||`COMMENT`||<font face="arial black" color="#AAAAFF">(</font> `//` <font face="arial black" color="#AAAAFF">(</font>_`NonLineBreak`_<font face="arial black" color="#AAAAFF">)`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">) | (</font> `/*` <font face="arial black" color="#AAAAFF">(</font>_`NonStarSlash`_<font face="arial black" color="#AAAAFF">)`*`</font> `*/` <font face="arial black" color="#AAAAFF">)</font>||Comments may be intermixed, and are removed/ignored as they are found.||
 ||`PP_INC`||`#include` `STRING`||Include source code from another file or url.||
