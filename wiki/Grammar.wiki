@@ -96,7 +96,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||`BITSHIFT`||`ADDSUB`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">(</font> `<<` <font face="arial black" color="#AAAAFF">|</font> `>>` <font face="arial black" color="#AAAAFF">|</font> `<<<` <font face="arial black" color="#AAAAFF">|</font> `>>>` <font face="arial black" color="#AAAAFF">)</font> `ADDSUB`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) (Signed) Bit-Shift left and right (`<<` `>>`); Bit-Rotation left and right (`<<<` `>>>`).||
 ||`ADDSUB`||`MULTDIV`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">(</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">)</font> `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Addition and Subtraction.||
 ||`MULTDIV`||`CAST`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">(</font> `*` <font face="arial black" color="#AAAAFF">|</font> `/` <font face="arial black" color="#AAAAFF">|</font> `%` <font face="arial black" color="#AAAAFF">)</font> `CAST`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Multiply, Division, Modulus (Remainder).||
-||`CAST`||`PRE_OP` <font face="arial black" color="#AAAAFF">(</font> `->` <font face="arial black" color="#AAAAFF">(</font> `TYPE`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">|</font> `(` <font face="arial black" color="#AAAAFF">(</font> `TYPE`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `)` <font face="arial black" color="#AAAAFF">)</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Type-Cast(s).||
+||`CAST`||`UNARY` <font face="arial black" color="#AAAAFF">(</font> `->` <font face="arial black" color="#AAAAFF">(</font> `TYPE`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">|</font> `(` <font face="arial black" color="#AAAAFF">(</font> `TYPE`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `)` <font face="arial black" color="#AAAAFF">)</font> <font face="arial black" color="#AAAAFF">)`*`</font>||(`L-►R`) Type-Cast(s).||
 ||`UNARY`||_`PRE_OP`_ `VALUE` _`POST_OP`_||Unary operations on a single value (Post-fix operations are applied first).||
 ||> _`PRE_OP`_||<font face="arial black" color="#AAAAFF">(</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">|</font> `~` <font face="arial black" color="#AAAAFF">|</font> `!` <font face="arial black" color="#AAAAFF">|</font> `*` <font face="arial black" color="#AAAAFF">|</font> `$` <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">[</font> `&` <font face="arial black" color="#AAAAFF">|</font> `++` <font face="arial black" color="#AAAAFF">|</font> `--` <font face="arial black" color="#AAAAFF">]</font>||(`L◄-R`) Pre-fix Unary operations.||
 ||> _`POST_OP`_||<font face="arial black" color="#AAAAFF">(</font> _`INDEX`_ <font face="arial black" color="#AAAAFF">|</font> `.` `P_ID`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">[</font>`.` `(` `EXPR`<font face="arial black" color="#AAAAFF">,,1,,</font> `)`<font face="arial black" color="#AAAAFF">]</font> `(` <font face="arial black" color="#AAAAFF">[</font> `EXPR`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">]</font> `)` <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">[</font>`++`<font face="arial black" color="#AAAAFF">|</font>`--`<font face="arial black" color="#AAAAFF">]</font>||(`L-►R`) Post-fix Unary operations.||
@@ -132,7 +132,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
 
 ==== The Classes: ====
 
- * `Type { `*`Expression`*`[] dims; `*`Bool`*` static, const, volatile, ref; `*`BaseType`*` base; }`
+ * `Type { `*`BaseType`*` base; `*`Expression`*`[] dims; `*`Bool`*` static, const, volatile, ref; }`
  * `<BaseType> { }`
    * `FuncPtr { `*`Entity`*` receiver; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
    * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` next; }`
@@ -188,9 +188,12 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
 
 ==== Conventions Used: ====
 
- * The current grammar rule at each point is in *`BOLD_MONOSPACE`*.
+ * The current grammar rule at each point is in *`BOLD MONOSPACE`*.
  * Rule contents are "in quotes" to separate them from other text.
- * <font color="blue">Descriptions of how syntax classes are used are in blue.</font>
+ * Descriptions of how syntax classes are used are in <font color="blue">*`Blue Bold`*</font>.
+   * `ClassName { Contents, Listed, In, Order }`
+   * `[An, Array, Of, Values]`
+   * "0" is also "`false`" or "`null`"
 
 ==== Walkthrough: ====
 
@@ -202,24 +205,14 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
    * *`VARDEC`* is further reduced to just "`TYPE` `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> `=` `EXPR`<font face="arial black" color="#AAAAFF">,,2,,</font>".
      * *`TYPE`* is similarly reduced to just "`P_ID`".
        * *`P_ID`* is reduced to "`IDENT`".
-         * *`IDENT`* is resolved to the identifier "`uint`".
-       * *`P_ID`* has become "`uint`", stored as <font color="blue">*`Entity{"uint",{},null}`*</font>
-     * "`TYPE`" has now become "`uint`".
-       * <font color="blue">Stored as *`Name{uint}`* (with "`uint`" pulled out of the *Value*)</font>
-       * The <font color="#C00">additional semantics</font> of "`TYPE`" require that any "`[]`" and "`*`" operations must come "first", followed by any number of "`IDENT.`" operations, and have either an `IDENT`, _`FUNCP`_ (function pointer type), or _`SW_VAR`_ (switch-variable type) at the "end" (in other words, we must have something that "looks" like a valid datatype). These requirements are met, since this instance of "`TYPE`" has now become just "`uint`", so we continue (i.e. there are no "errors").
-     * The "<font face="arial black" color="#AAAAFF">(</font> `LAMBDA`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">[</font> `@` `LAMBDA`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `=` `LAMBDA`<font face="arial black" color="#AAAAFF">,,3,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font>" portion of the "`VARDEC`" rule represents a comma-separated-list ("<font face="arial black" color="#AAAAFF">(` `),</font>") of variables being declared. Since our code has only one variable declaration, this portion is only repeated once (and thus, there are no commas "between items").
-       * "`LAMBDA`<font face="arial black" color="#AAAAFF">,,1,,</font>" resolves to "`T_CAST` <font face="arial black" color="#AAAAFF">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAAAFF">]</font>" (rather than "`(` `)` `=>` `ASSIGN`", since our code does not have parentheses).
-         * "`T_CAST`" _eventually_ resolves down to "`IDENT`" as before.
-             * This time, the matching identifier is "`x`", so _this_ "`IDENT`" has now become "`x`".
-               * <font color="blue">Stored as *`Value{x}`*</font>
-         * "`T_CAST`" has now become "`x`" (and <font color="#C00">additional semantics</font> do not apply).
-         * The optional "<font face="arial black" color="#AAAAFF">[</font> `=>` `ASSIGN` <font face="arial black" color="#AAAAFF">]</font>" is removed, since it is not used.
-       * The optional "<font face="arial black" color="#AAAAFF">[</font> `@` `LAMBDA`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">]</font>" is removed, since it is not used.
-       * The optional "<font face="arial black" color="#AAAAFF">[</font> `=` `LAMBDA`<font face="arial black" color="#AAAAFF">,,3,,</font> <font face="arial black" color="#AAAAFF">]</font>" *is* used.
-         * The "`=`" from the rule matches the "`=`" from our example code.
-         * "`LAMBDA`<font face="arial black" color="#AAAAFF">,,3,,</font>" resolves as before (dropping all the unused optional "<font face="arial black" color="#AAAAFF">[` `]</font>" "<font face="arial black" color="#AAAAFF">(` `)`*`</font>" portions), but _this_ time only down to "`ADDSUB`", since it has optional portions which *are* used (the "`+`" operator):
-           * "`ADDSUB`" resolves to "`MULTDIV`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">( (</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">)</font> `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>".
-             * "`MULTDIV`<font face="arial black" color="#AAAAFF">,,1,,</font>" _eventually_ resolves down to "`IDENT`", which in turn becomes "`a`".
+         * *`IDENT`* is matched to "`uint`" from the example source code.
+       * *`P_ID`* is `uint`, stored as <font color="blue">*`Entity{"uint",[],0}`*</font>.
+     * *`TYPE`* is "`uint`", stored as <font color="blue">*`Type{Entity{"uint",[],0},[],0,0,0,0}`*</font>.
+     * *`IDENT`*<font face="arial black" color="#AAAAFF">,,1,,</font> is matched to "`x`".
+     * The "*`=`*" is matched from the example source code.
+     * *`EXPR`*<font face="arial black" color="#AAAAFF">,,2,,</font> resolves to `BINCOND`, is reduced to `TERNARY`, is reduced to `COND_OR`, ...(etc.)..., is reduced to `ADDSUB`.
+       * *`ADDSUB`* is reduced to "`MULTDIV`<font face="arial black" color="#AAAAFF">,,1,,</font> `+` `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font>".
+             * *`MULTDIV`*<font face="arial black" color="#AAAAFF">,,1,,</font>" is reduced to `CAST`, is reduced to `UNARY`.
                * <font color="blue">Stored as *`Value{a}`*</font>
              * The "<font face="arial black" color="#AAAAFF">( (</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">)</font> `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>" portion is repeated *one time*, as follows:
              * The first option of "<font face="arial black" color="#AAAAFF">(</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">)</font>" is chosen to match the "`+`" used in our code.
