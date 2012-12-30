@@ -206,14 +206,19 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
      * *`TYPE`* is similarly reduced to just "`P_ID`".
        * *`P_ID`* is reduced to "`IDENT`".
          * *`IDENT`* is matched to "`uint`" from the example source code.
-       * *`P_ID`* is `uint`, stored as <font color="blue">*`Entity{"uint",[],0}`*</font>.
+       * *`P_ID`* is "`uint`", stored as <font color="blue">*`Entity{"uint",[],0}`*</font>.
      * *`TYPE`* is "`uint`", stored as <font color="blue">*`Type{Entity{"uint",[],0},[],0,0,0,0}`*</font>.
      * *`IDENT`*<font face="arial black" color="#AAAAFF">,,1,,</font> is matched to "`x`".
      * The "*`=`*" is matched from the example source code.
-     * *`EXPR`*<font face="arial black" color="#AAAAFF">,,2,,</font> resolves to `BINCOND`, is reduced to `TERNARY`, is reduced to `COND_OR`, ...(etc.)..., is reduced to `ADDSUB`.
+     * *`EXPR`*<font face="arial black" color="#AAAAFF">,,2,,</font> resolves to "`BINCOND`", is reduced to "`TERNARY`", is reduced to "`COND_OR`", ...(etc.)..., is reduced to "`ADDSUB`".
        * *`ADDSUB`* is reduced to "`MULTDIV`<font face="arial black" color="#AAAAFF">,,1,,</font> `+` `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font>".
-             * *`MULTDIV`*<font face="arial black" color="#AAAAFF">,,1,,</font>" is reduced to `CAST`, is reduced to `UNARY`.
-               * <font color="blue">Stored as *`Value{a}`*</font>
+             * *`MULTDIV`*<font face="arial black" color="#AAAAFF">,,1,,</font>" is reduced to "`CAST`", is reduced to "`UNARY`".
+               * *`UNARY`* resolves to "_`PRE_OP`_ `VALUE` _`POST_OP`_".
+                 * *_`PRE_OP`_* is reduced to nothing (none of the optional prefix operations are used here).
+                 * *`VALUE`* is reduced to "`P_ID`", is reduced to "`IDENT`".
+                   * *`IDENT`* is matched to "`a`" from the example source code.
+                 * *`VALUE`* is "`a`", stored as <font color="blue">*`Value{"a"}`*</font>.
+                 * *_`POST_OP`_* is reduced to nothing (none of the optional postfix operations are used here).
              * The "<font face="arial black" color="#AAAAFF">( (</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">)</font> `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>" portion is repeated *one time*, as follows:
              * The first option of "<font face="arial black" color="#AAAAFF">(</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">)</font>" is chosen to match the "`+`" used in our code.
              * "`MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font>" resolves down to "`UNARY`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">( (</font> `*` <font face="arial black" color="#AAAAFF">|</font> `/` <font face="arial black" color="#AAAAFF">|</font> `%` <font face="arial black" color="#AAAAFF">)</font> `UNARY`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">)`*`</font>".
