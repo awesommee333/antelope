@@ -173,7 +173,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * `Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`
    * `Call { `*`Bool`*` isNew; `*`Expression`*`[] args; `*`Expression`*`[] inits; }`
      *  <font color="green">`// function/constructor call`</font>
-   * `Cast { `*`Expression`*` left; `*`Type`*`[] `*`Type`*`s; }`
+   * `Cast { `*`Expression`*` left; `*`Type`*`[] Types; }`
    * `Value { `*`Token`*` value; }`
 
 <br>
