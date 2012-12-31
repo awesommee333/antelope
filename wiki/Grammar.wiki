@@ -247,12 +247,13 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
          * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> is "`b * c`", stored as <font color="blue">*`Operation{"*",Value{"b"},Value{"c"}}`*</font>.
        * *`ADDSUB`* is "`a + b * c`", stored as <font color="blue">*`Operation{"+",Value{"a"},Operation{"*",...}}`*</font>.
      * <font color="red">*`EXPR`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> is "`a + b * c`", stored as <font color="blue">*`Operation{"+",Value{"a"},Operation{"*",...}}`*</font>.
-   * <font color="#FF00CC">*`VARDEC`*</font> is "`uint x = a + b * c`", stored as <font color="blue">*`VarDec{Type{...},[Variable{0,"x",Type{...},0,0,Operation{"+",...}}]}`*</font>.
+   * <font color="#FF00CC">*`VARDEC`*</font> is "`uint x = a + b * c`", stored as<br><font color="blue">*`VarDec{Type{...},[Variable{Context{(global),[]},"x",Type{...},0,0,Operation{"+",...}}]}`*</font>.
    * The "`;`" is matched from the example source code.
  * *`SOURCE`* is "`uint x = a + b * c;`", and thus the entire source has been parsed.
  * *`SOURCE`* is ultimately stored as:
    * <font color="blue">*`Namespace { [], 0, [],`*</font>
-     * <font color="blue">*`[ Variable { 0, "x",`*</font>
+     * <font color="blue">*`[ Variable {`*</font>
+       * <font color="blue">*`Context { (global), [] }, "x",`*</font>
        * <font color="blue">*`Type { Entity{"uint",[],0}, [], 0, 0, 0, 0 }, 0, 0,`*</font>
        * <font color="blue">*`Operation { "+", Value{"a"},`*</font>
          * <font color="blue">*`Operation { "*", Value{"b"}, Value{"c"} }`*</font>
