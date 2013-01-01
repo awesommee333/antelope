@@ -17,8 +17,8 @@
 || *Primitive Types* || _One Byte_ || _Two Bytes_ || || *Modifiers* || _Explanation_ ||
 || _Unsigned Types:_ || byte, char, bool ||uint || || _volatile_ || Always fetch from memory (never assume value). ||
 || _Signed Types:_  || sbyte || int || || _static_ || Share across all contexts (one-time initializations). ||
+|| || || || || _const_ || Value cannot be modified once set. ||
 
-Variables are declared by listing variable names after a datatype, or using the inference operator. Type-modifiers (if any) are listed before the datatype. Antelope automatically inserts dereferencing (`*`) and addressing (`&`) operators when the context for them is clear (first so that indexing (`[]`) and dotting (`.`) makes sense, and second to adjust the right-side of assignments to be suitable for the variable being assigned-to):
 {{{
    *int pi;    // pi is a pointer-to-int variable
    int x,y,z;   // Declare int variables x, y, and z
@@ -27,22 +27,19 @@ Variables are declared by listing variable names after a datatype, or using the 
    const byte W = 2; // Constant variables are declared with the type
    volatile int v;   // v will always be fetched from memory
 
-   i := 5;        // Numeric literals are ints by default (i is an int),
-   b := (5:byte); // but they can be cast to other types (b is a byte).
+   i := 5;         // Numeric literals are ints by default (i is an int),
+   b := (5->byte); // but they can be cast to other types (b is a byte).
 
-   h1 := 0x01;    // Hexadecimal and binary literals default to the
-   h2 := 0x0001;  // smallest (unsigned) type for the number of digits
-   b1 := 0b1;     // (h1 and b1 are bytes, but h2 and b2 are uints).
+   h1 := 0x01;     // Hexadecimal and binary literals default to the
+   h2 := 0x0001;   // smallest (unsigned) type for the number of digits
+   b1 := 0b1;      // (h1 and b1 are bytes, but h2 and b2 are uints).
    b2 := 0b0000000001;
 
    p := &x;        // Declare p with an interred type of *int
    q := {'H','I'}; // Declare q with inferred type of [2]char
-
-   p = b; // Understood as "p = &b", since p is a pointer (*byte).
-   b = p; // Understood as "b = *p", since b is a byte.
 }}}
 
-All variables are statically allocated. They are stored _within_ instructions when possible (saves space and uses faster instructions); otherwise within "safe-RAM" space outside of the program (specified with `#allocate`); otherwise directly into the program body. However, the compiler may decide to split variables up into multiple entities or store values directly in registers as a result of optimization (see "Interpreted Aspects"). Variables can be associated with an explicit assembly-coded address (e.g. `int x @ "asmAddress"` aliases x with an int value at "asmAddress").
+Variables are statically allocated (_within_ instructions when possible, which saves space and uses faster instructions); otherwise within "safe-RAM" space (specified with `#allocate`); otherwise directly into the program. Variables can be associated with an explicit assembly-coded address (e.g. `int x @ "asmAddress"` aliases x with an int value at "asmAddress").
 
 == Arrays ==
 
