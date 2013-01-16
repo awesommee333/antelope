@@ -18,8 +18,7 @@ public class Token implements Comparable<Token> {
     // Private values for Token.type
     private static final byte T_ANNOTATION  = 0x00;
     private static final byte T_ERROR       = 0x01;
-    private static final byte T_NEW_FILE    = 0x02;
-    private static final byte T_COMMENT     = 0x04;
+    private static final byte T_COMMENT     = 0x02;
     private static final byte T_OPERATOR    = 0x10;
     private static final byte T_ASSIGN_OP   = 0x11; // Assignment operators
     private static final byte T_BITWISE_OP  = 0x12; // & | ^
@@ -54,6 +53,7 @@ public class Token implements Comparable<Token> {
     public static final Token EOF      = new Token(T_ANNOTATION, "END_OF_FILE");
     public static final Token NEW_LINE = new Token(T_ANNOTATION, "NEW_LINE"   );
     public static final Token AND       = new Token(T_OPERATOR, "&&");
+    public static final Token ARROW     = new Token(T_OPERATOR, "->");
     public static final Token AT        = new Token(T_OPERATOR, "@" );
     public static final Token COLON     = new Token(T_OPERATOR, ":" );
     public static final Token COMMA     = new Token(T_OPERATOR, "," );
@@ -62,6 +62,7 @@ public class Token implements Comparable<Token> {
     public static final Token L_BRACKET = new Token(T_OPERATOR, "[" );
     public static final Token L_PAREN   = new Token(T_OPERATOR, "(" );
     public static final Token L_SHIFT   = new Token(T_OPERATOR, "<<");
+    public static final Token LAMBDA    = new Token(T_OPERATOR, "=>");
     public static final Token MOD       = new Token(T_OPERATOR, "%" );
     public static final Token OR        = new Token(T_OPERATOR, "||");
     public static final Token POUND     = new Token(T_OPERATOR, "#" );
@@ -69,9 +70,9 @@ public class Token implements Comparable<Token> {
     public static final Token R_BRACKET = new Token(T_OPERATOR, "]" );
     public static final Token R_PAREN   = new Token(T_OPERATOR, ")" );
     public static final Token R_SHIFT   = new Token(T_OPERATOR, ">>");
-    public static final Token SEMI      = new Token(T_OPERATOR, ";");
-    public static final Token SLASH     = new Token(T_OPERATOR, "/");
-    public static final Token STAR      = new Token(T_OPERATOR, "*");
+    public static final Token SEMI      = new Token(T_OPERATOR, ";" );
+    public static final Token SLASH     = new Token(T_OPERATOR, "/" );
+    public static final Token STAR      = new Token(T_OPERATOR, "*" );
     public static final Token AND_EQ    = new Token(T_ASSIGN_OP, "&=" );
     public static final Token ASSIGN    = new Token(T_ASSIGN_OP, "="  );
     public static final Token DIV_EQ    = new Token(T_ASSIGN_OP, "/=" );
@@ -158,7 +159,6 @@ public class Token implements Comparable<Token> {
     public boolean isUserIdent( ) { return type == T_USER_IDENT;  }
     public boolean isKeyword(   ) { return typeIsIn(T_KEYWORD);   }
     public boolean isNewLine(   ) { return this == NEW_LINE;      }
-    public boolean isNewFile(   ) { return type == T_NEW_FILE;    }
     public boolean isNumber(    ) { return typeIsIn(T_NUMBER);    }
     public boolean isOperator(  ) { return typeIsIn(T_OPERATOR);  }
     public boolean isPrimitive( ) { return type == T_PRIMITIVE;   }
@@ -224,9 +224,6 @@ public class Token implements Comparable<Token> {
     public static Token makeNumber(int num) {
         return new Token(T_DEC_NUMBER, Integer.toString(num), num);
     }
-    public static Token makeNewFile(String fileName) {
-        return new Token(T_NEW_FILE, fileName);
-    }
 
     public static Token makeIdent(String ident) throws Exception {
         for(int i = 0; i < ident.length(); i++) {
@@ -263,104 +260,96 @@ public class Token implements Comparable<Token> {
         return Character.isLetterOrDigit(ch) || ch == '_';
     }
 
-    public static class Tokenizer implements TokenSource {
-        private StringBuilder source;
-        
-        public Tokenizer(StringBuilder source) {
-            this.source = source;
+    public Token nextToken(StringBuilder source) {
+        int idx, len = source.length();
+
+        // Remove whitespace
+        for(idx = 0; idx < len && Character.isWhitespace(source.charAt(idx)); idx++) {
+            char ch = source.charAt(idx);
+            if(ch == '\r' || ch == '\n') {
+                source.delete(0,idx+1);
+                return NEW_LINE;
+            }
         }
-        
-        public Token nextToken() {
-            int idx, len = source.length();
 
-            // Remove whitespace
-            for(idx = 0; idx < len && Character.isWhitespace(source.charAt(idx)); idx++) {
-                char ch = source.charAt(idx);
-                if(ch == '\r' || ch == '\n') {
-                    source.delete(0,idx+1);
-                    return NEW_LINE;
+        // Remove comments
+        if(idx < len-1 && source.charAt(idx) == '/') {
+            if(source.charAt(idx+1) == '/') {
+                int i = idx+2;
+                char ch = source.charAt(i++);
+                while(i < len && ch != '\r' && ch != '\n') {
+                    ch = source.charAt(i++);
                 }
+                if(i < len) { i--; }
+                String value = source.substring(idx,i);
+                source.delete(idx,i);
+                return makeComment(value);
             }
-
-            // Remove comments
-            if(idx < len-1 && source.charAt(idx) == '/') {
-                if(source.charAt(idx+1) == '/') {
-                    int i = idx+2;
-                    char ch = source.charAt(i++);
-                    while(i < len && ch != '\r' && ch != '\n') {
-                        ch = source.charAt(i++);
-                    }
-                    if(i < len) { i--; }
-                    String value = source.substring(idx,i);
-                    source.delete(idx,i);
-                    return makeComment(value);
+            if(source.charAt(idx+1) == '*') {
+                int i = idx+2;
+                char last = 0, ch = source.charAt(i++);
+                while(i < len && (last != '*' || ch != '/')) {
+                    last = ch; ch = source.charAt(i++);
                 }
-                if(source.charAt(idx+1) == '*') {
-                    int i = idx+2;
-                    char last = 0, ch = source.charAt(i++);
-                    while(i < len && (last != '*' || ch != '/')) {
-                        last = ch; ch = source.charAt(i++);
-                    }
-                    String value = source.substring(idx,i);
-                    source.delete(idx,i);
-                    return makeComment(value);
-                }
+                String value = source.substring(idx,i);
+                source.delete(idx,i);
+                return makeComment(value);
             }
+        }
 
-            // Signal EOF (end of file)
-            if(idx >= len) {
-                source.delete(0,idx);
-                return EOF;
-            }
+        // Signal EOF (end of file)
+        if(idx >= len) {
+            source.delete(0,idx);
+            return EOF;
+        }
 
-            int begin = idx;
-            char start = source.charAt(idx);
+        int begin = idx;
+        char start = source.charAt(idx);
 
-            // Handle keywords and directives
-            if(isIdentChar(start)) {
-                while(idx < len && isIdentChar(source.charAt(idx))) { idx++; }
-                String value = source.substring(begin, idx);
-                source.delete(0,idx);
-                Token t = PRE_DEFINED.get(value);
-                if(t != null) { return t; }
-                if(Character.isDigit(value.charAt(0))) { return makeNumber(value); }
-                return getIdentToken(value);
-            }
-
-            // Handle string and character literals
-            if(start == '\"' || start == '\'') {
-                while(++idx < len) {
-                    char ch = source.charAt(idx);
-                    if(ch == '\\') { idx++; continue; }
-                    if(ch == '\r' || ch == '\n') { break; }
-                    if(ch == start) {
-                        String value = source.substring(begin+1, idx);
-                        source.delete(0, idx+1);
-                        try { return ((start == '\"')? makeString(value) : makeChar(value)); }
-                        catch(Exception e) { return makeError(e.getMessage()); }
-                    }
-                }
-                String value = source.substring(begin, idx-1);
-                source.delete(0,idx);
-                return makeError("Missing closing quote on literal: "+start+value);
-            }
-
-            // Handle operators
-            char next = (idx < len-1)? source.charAt(idx+1) : 0;
-            if(start == next && DOUBLE_OPS.indexOf(start) >= 0) {
-                if(idx++ < len-2 && start == '>' && source.charAt(idx+1) == '>') { idx++; }
-                if((start == '>' || start == '<') && source.charAt(idx+1) == '=') { idx++; }
-            }
-            else if((next == '=' && EQ_OPS.indexOf(start) >= 0) || (start == '=' && next == '>')) {
-                idx++;
-            }
-
-            String value = source.substring(begin, idx+1);
-            source.delete(0,idx+1);
+        // Handle keywords and directives
+        if(isIdentChar(start)) {
+            while(idx < len && isIdentChar(source.charAt(idx))) { idx++; }
+            String value = source.substring(begin, idx);
+            source.delete(0,idx);
             Token t = PRE_DEFINED.get(value);
             if(t != null) { return t; }
-            return makeError("Unexpected symbol found: "+value);
+            if(Character.isDigit(value.charAt(0))) { return makeNumber(value); }
+            return getIdentToken(value);
         }
+
+        // Handle string and character literals
+        if(start == '\"' || start == '\'') {
+            while(++idx < len) {
+                char ch = source.charAt(idx);
+                if(ch == '\\') { idx++; continue; }
+                if(ch == '\r' || ch == '\n') { break; }
+                if(ch == start) {
+                    String value = source.substring(begin+1, idx);
+                    source.delete(0, idx+1);
+                    try { return ((start == '\"')? makeString(value) : makeChar(value)); }
+                    catch(Exception e) { return makeError(e.getMessage()); }
+                }
+            }
+            String value = source.substring(begin, idx-1);
+            source.delete(0,idx);
+            return makeError("Missing closing quote on literal: "+start+value);
+        }
+
+        // Handle operators
+        char next = (idx < len-1)? source.charAt(idx+1) : 0;
+        if(start == next && DOUBLE_OPS.indexOf(start) >= 0) {
+            if(idx++ < len-2 && start == '>' && source.charAt(idx+1) == '>') { idx++; }
+            if((start == '>' || start == '<') && source.charAt(idx+1) == '=') { idx++; }
+        }
+        else if((next == '=' && EQ_OPS.indexOf(start) >= 0) || (next == '>' && (start == '=' || start == '-'))) {
+            idx++;
+        }
+
+        String value = source.substring(begin, idx+1);
+        source.delete(0,idx+1);
+        Token t = PRE_DEFINED.get(value);
+        if(t != null) { return t; }
+        return makeError("Unexpected symbol found: "+value);
     }
 
     private static Token getIdentToken(String value) {
