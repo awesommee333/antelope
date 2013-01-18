@@ -174,6 +174,9 @@ public class Token implements Comparable<Token> {
     }
 
     @Override
+    public String toString() { return value; }
+
+    @Override
     public boolean equals(Object o) {
         if(this == o) { return true; } // Most common case.
         if(o instanceof Token) {
@@ -182,12 +185,6 @@ public class Token implements Comparable<Token> {
                && (t.value.equals(value));
         }
         return false;
-    }
-
-    @Override
-    public String toString() {
-        if(type != T_ANNOTATION) { return value; }
-        return "<<"+value+((number > 0)? ":"+number+">>" : ">>");
     }
 
     public String format(boolean allowCtrlChars) { // returns null if not a legally formatted char or string
@@ -260,7 +257,7 @@ public class Token implements Comparable<Token> {
         return Character.isLetterOrDigit(ch) || ch == '_';
     }
 
-    public Token nextToken(StringBuilder source) {
+    public static Token nextToken(StringBuilder source) {
         int idx, len = source.length();
 
         // Remove whitespace

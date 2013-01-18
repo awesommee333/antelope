@@ -3,9 +3,10 @@ package antelope;
 public interface ErrorHandler {
     public void handle(String file, int line, String message);
 
-    public static class Printer implements ErrorHandler {
+    public static class Default implements ErrorHandler {
         public java.io.PrintStream printStream;
-        public Printer(java.io.PrintStream printStream) {
+        public Default() { printStream = System.out; }
+        public Default(java.io.PrintStream printStream) {
             this.printStream = printStream;
         }
         public void handle(String file, int line, String message) {

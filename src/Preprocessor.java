@@ -1,66 +1,50 @@
 package antelope;
 import java.util.LinkedList;
 
-public class Preprocessor {
-    // THIS IS THE ONLY PUBLIC ITEM:
-    public static LinkedList<Token> process(String file, Token environment) {
-        StringBuilder src = getSource(file);
-
-        if(src == null) {
-            LinkedList<Token> err = new LinkedList<Token>();
-            err.add(Token.makeError("Unable to process file: "+file));
-            return err;
-        }
-
-        Preprocessor t = new Preprocessor(src, file, environment, false);
-        t.tokens.add(Token.EOF); // tokens + EOS
-        t.assemblies.consume(t.tokens); // assemblies + (tokens + EOS)
-        t.allocations.consume(t.assemblies); // allocations + (assemblies + tokens + EOS)
-        t.errors.consume(t.allocations); // errors + (allocations + assemblies + tokens + EOS)
-        return t.errors; // In order: errors, allocations, assemblies, tokens, EOS
-    }
-
-    private final String file;
+public final class Preprocessor implements TokenSource {
+    private final java.util.TreeSet<Token> defined;
     private final LinkedList<Token> allocations;
     private final LinkedList<Token> assemblies;
-    private final LinkedList<Token> errors;
-    private final LinkedList<Token> tokens;
-    private boolean legalEnvironment;
-    private boolean environmentUsed;
-    private StringBuilder source;
-    private int line, prevLine;
-    private Token environment;
-    private Token pushBack;
+    private final TokenSource source;
+    private int lastLine;
+    
+    public Preprocessor(TokenSource source) {
+        this.source = source;
+        lastLine = getLine() - 1;
+        assemblies = new LinkeList<Token>();
+        allocations = new LinkeList<Token>();
+    }
+    
+    public Preprocessor(String file, ErrorHandler handler) {
+        super(new TokenSource.Default.Get(file, handler));
+    }
+    
+    public int getLine() { return source.getLine(); }
+    public String getName() { return source.getName(); }
+    
+    private void error(String message) {
+        Token t;
+        int line = getLine();
+        do { Token t = source.nextToken(); }
+        while(line == getLine() && !t.isEOF());
+        handler.handle(getName(), line, message);
+    }
 
-    private Preprocessor() { throw new Error("Do not use this constructor!"); }
-    private Preprocessor(StringBuilder src, String file, Token env, boolean envUsed) {
-        source = getSource(file);
-        allocations = new LinkedList<Token>();
-        assemblies = new LinkedList<Token>();
-        errors = new LinkedList<Token>();
-        tokens = new LinkedList<Token>();
-        environmentUsed = envUsed;
-        legalEnvironment = true;
-        environment = env;
-        this.file = file;
-        pushBack = null;
-        source = src;
-        prevLine = 0;
-        line = 1;
-
-        if(tokenize(false) == Token.DIR_END) {
-            error("Mismatched #end directive");
+    public Token nextToken() {
+        Token t = source.nextToken();
+        if(t != Token.POUND) return t;
+        t = source.nextToken();
+        int line = getLine();
+        
+        if(t == Token.DEFINE) {
+            do {
+                t = source.nextToken();
+                if(t.isIdentifier()) { defined.add(t); }
+                else { error("Identifier expected after #define. Found: "+t); }
+            } while(line == getLine());
         }
-    }
-
-    private static StringBuilder getSource(String file) {
-        javax.swing.JTextArea jta = new javax.swing.JTextArea();
-        try { jta.read(new java.io.BufferedReader(new java.io.FileReader(file)), file); }
-        catch(java.io.IOException ioe) { return null; }
-        return new StringBuilder(jta.getText());
-    }
-
-    private Token tokenize(boolean inEnv) { // returns terminating Token
+        
+        
         Token t;
         for(t = nextToken(); t != Token.EOS && t != Token.DIR_END; t = nextToken()) {
             int l = line;
@@ -171,29 +155,5 @@ public class Preprocessor {
             }
         }
         return t;
-    }
-
-    private Token nextToken() { // Get next non-line, non-comment, non-error token
-        Token t;
-        if(pushBack != null) { t = pushBack; pushBack = null; return t; }
-        do { // count lines, dump comments
-            t = Token.parseNext(source);
-            if(t == Token.NEW_LINE) { line++; }
-            if(t.isError()) { error(file+":"+line+":"+t.value); }
-        } while(t == Token.NEW_LINE || t.isComment() || t.isError());
-        return t;
-    }
-
-    private Token nextLineToken() { // Get next token on same line (null if none)
-        if(pushBack != null) { return null; }
-        int prev = line;
-        Token t = nextToken();
-        if(line == prev && t != Token.EOS) { return t; }
-        pushBack = t; return null;
-    }
-
-    private void error(String message) { error(message,line); }
-    private void error(String message, int l) {
-        errors.add(Token.makeError(file+":"+l+": "+message));
     }
 }

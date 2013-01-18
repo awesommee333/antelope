@@ -1,14 +1,12 @@
-// This LinkedList class was necessary because all java.util.Collection
-// classes use a horrifically inefficient algorithm to merge lists
-// (converts one to an array, then adds each element one by one)
+// This LinkedList class allows lists to "consume" each other
 
 package antelope;
 
 public class LinkedList<E> implements Iterable<E> {
     private static class Node<E> {
         public E item;
-        public Node next;
-        public Node(E i, Node n) { item = i; next = n; }
+        public Node<E> next;
+        public Node(E i, Node<E> n) { item = i; next = n; }
     }
 
     private static class NodeIterator<E> implements java.util.Iterator<E> {
@@ -24,7 +22,7 @@ public class LinkedList<E> implements Iterable<E> {
     private int length;
 
     public LinkedList() { clear(); }
-    public LinkedList(LinkedList list) { clear(); consume(list); }
+    public LinkedList(LinkedList<E> list) { clear(); consume(list); }
 
     public int size(  ) { return length;    }
     public E getFirst() { return head.item; }
@@ -34,13 +32,13 @@ public class LinkedList<E> implements Iterable<E> {
 
     public void addFirst(E e) {
         if(head == null) { head = tail = new Node<E>(e, null); }
-        else { head = new Node(e, head); }
+        else { head = new Node<E>(e, head); }
         length++;
     }
 
     public void add(E e) {
         if(head == null) { head = tail = new Node<E>(e, null); }
-        else { tail.next = new Node(e, null); tail = tail.next; }
+        else { tail.next = new Node<E>(e, null); tail = tail.next; }
         length++;
     }
 
