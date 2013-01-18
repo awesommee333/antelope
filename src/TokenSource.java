@@ -1,12 +1,14 @@
 package antelope;
 
 public interface TokenSource {
+    public void clearLine();
     public Token nextToken();
     public String getName();
     public int getLine();
     
-    public static class Default implements TokenSource {
-        protected int line;
+    public static final class Default implements TokenSource {
+        private int line;
+        private Token next;
         public final String name;
         public final StringBuilder source;
         public final ErrorHandler handler;
@@ -15,16 +17,21 @@ public interface TokenSource {
         public Default(StringBuilder source, String name, ErrorHandler handler) {
             this.source = source; this.name = name;
             this.handler = handler; line = 1;
+            next = Token.nextToken();
         }
         public Token nextToken() {
-            Token t;
             do {
-                t = Token.nextToken(source);
-                if(t.isError()) { handler.handle(name, line, t.value); }
-                else if(t.isNewLine()) { line++; }
-                else if(!t.isComment()) { break; }
+                if(next.isError()) { handler.handle(name, line, next.value); }
+                else if(next.isNewLine()) { line++; }
+                else if(!next.isComment()) { break; }
+                next = Token.nextToken(source);
             } while(true);
-            return t;
+            return next;
+        }
+        public void clearLine() {
+            while(!next.isEOF() && !next.isNewLine()) {
+                next = Token.nextToken(source);
+            }
         }
         public static Default Get(String file, ErrorHandler handler) {
             javax.swing.JTextArea jta = new javax.swing.JTextArea();
