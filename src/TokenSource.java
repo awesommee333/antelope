@@ -1,7 +1,6 @@
 package antelope;
 
 public interface TokenSource {
-    public void clearLine();
     public Token nextToken();
     public String getName();
     public int getLine();
