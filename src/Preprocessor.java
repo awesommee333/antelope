@@ -3,26 +3,28 @@ import java.util.LinkedList;
 
 public final class Preprocessor implements TokenSource {
     public final java.util.TreeSet<Token> defined;
-    public final LinkedList<Token> allocations; // Will eventually replace with proper constructs
-    public final LinkedList<Token> assemblies;  // Ditto.
+    public final LinkedList<Token> allocations; // Will eventually replace these lists
+    public final LinkedList<Token> assemblies;  // with proper syntax-tree constructs.
     public final ErrorHandler handler;
     public final TokenSource source;
+    private Preprocessor include;
     private boolean first;
 
     private Preprocessor(TokenSource src, ErrorHandler hndlr, LinkedList<Token> asm, LinkedList<Token> alloc) {
-        source = src; handler = hndlr; allocations = alloc; assemblies = asm; first = true;
+        source = src; handler = hndlr; allocations = alloc; assemblies = asm; first = true; include = null;
     }
 
     public Preprocessor(TokenSource source, ErrorHandler handler) {
         this(source, handler, new LinkedList<Token>(), new LinkedList<Token>());
+        if(source == null) throw new NullPointerException("TokenSource must not be null");
     }
 
     public Preprocessor(String file, ErrorHandler handler) {
         this(TokenSource.Default.Get(file, handler), handler);
     }
 
-    public int getLine() { return source.getLine(); }
-    public String getName() { return source.getName(); }
+    public int getLine() { return (include != null)? include.getLine() : source.getLine(); }
+    public String getName() { return (include != null)? include.getName() : source.getName(); }
 
     private Token clearLine(String errorMessage, int line) {
         handler.handle(getName(), line, errorMessage);
@@ -33,13 +35,19 @@ public final class Preprocessor implements TokenSource {
     }
 
     public Token nextToken() {
+        if(include != null) {
+            Token t = include.nextToken();
+            if(!t.isEOF()) return t;
+            include = null;
+        }
         int prevLine = getLine();
         Token t = source.nextToken();
+        String srcName = getName();
         while(t == Token.POUND) {
             int line = getLine();
             t = source.nextToken();
             if(line == prevLine && first) {
-                handler.handle(getName(), prevLine, "Directive not on its own line");
+                handler.handle(srcName, prevLine, "Directive not on its own line");
                 first = false;
             }
             else if(line != getLine()) {
@@ -50,7 +58,7 @@ public final class Preprocessor implements TokenSource {
                 do {
                     t = source.nextToken();
                     if(line != getLine())
-                        handler.handle(getName(), line, msg);
+                        handler.handle(srcName, line, msg);
                     else if(t.isIdentifier())
                         defined.add(t);
                     else
@@ -61,30 +69,30 @@ public final class Preprocessor implements TokenSource {
             else if(t == Token.ASSEMBLY) {
                 t = nextToken();
                 if(line != getLine())
-                    handler.handle("Missing arguments after #assembly");
+                    handler.handle(srcName, line, "Missing arguments after #assembly");
                 else if(!t.isString())
-                    t = clearLine("Code for #assembly must be a string literal");
+                    t = clearLine("Code for #assembly must be a string literal", line);
                 else
                     allocations.add(t);
             }
             else if(t == Token.ALLOCATE) {
                 t = nextToken();
                 if(line != getLine())
-                    handler.handle("Missing arguments after #allocate");
+                    handler.handle(srcName, line, "Missing arguments after #allocate");
                 else if(!t.isString())
-                    t = clearLine("Address for #allocate must be a string literal");
+                    t = clearLine("Address for #allocate must be a string literal", line);
                 else {
                     int limit = 0;
                     Token addr = t;
                     t = source.nextToken();
 
                     if(line == getLine()) {
-                        boolean minus = (t = Token.MINUS);
+                        boolean minus = (t == Token.MINUS);
                         if(!minus && t != Token.PLUS)
                             t = clearLine("Unexpected symbol after #allocate: "+t, line);
                         else {
                             t = source.nextToken();
-                            if(line == getLine() && !t.isInteger())
+                            if(line == getLine() && !t.isNumber())
                                 t = clearLine("Unexpected symbol after #allocate: "+t, line);
                             limit = (minus ? -t.number : t.number);
                         }
@@ -95,22 +103,39 @@ public final class Preprocessor implements TokenSource {
                 }
             }
             else if(t == Token.INCLUDE) {
-                // INSERT CODE!
+                String msg = "Missing arguments after #include";
+                do {
+                    t = source.nextToken();
+                    if(line != getLine())
+                        handler.handle(srcName, line, msg);
+                    else if(t.isString()) {
+                        String file = t.format();
+                        if(file != null) {
+                            include = new Preprocessor(TokenSource.Default.Get(t.format(), handler), handler, assemblies, allocations);
+                            Token tok = include.nextToken();
+                            if(!tok.isEOF()) return tok;
+                            include = null;
+                        }
+                    }
+                    else
+                        t = clearLine("String literal expected after #include. Found: "+t, line);
+                    msg = "Missing identifier after comma";
+                } while(t == Token.COMMA && line == getLine());
             }
             else if(t == Token.IF) {
                 // INSERT CODE!
             }
             else if(t == Token.ERROR) {
                 t = nextToken();
-                if(line !- getLine())
-                    handler.handle("<INSERT ERROR MESSAGE>");
+                if(line != getLine())
+                    handler.handle(srcName, line, "<INSERT ERROR MESSAGE>");
                 else if(t.isString())
-                    handler.handle(t.toString());
+                    handler.handle(srcName, line, t.toString());
                 else
                     t = clearLine("Error message must be a string literal", line);
             }
             else {
-                t = clearLine("Invalid directive: #"+t);
+                t = clearLine("Invalid directive: #"+t, line);
             }
             prevLine = line;
         }

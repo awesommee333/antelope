@@ -187,6 +187,7 @@ public class Token implements Comparable<Token> {
         return false;
     }
 
+    public String format() { return format(true); }
     public String format(boolean allowCtrlChars) { // returns null if not a legally formatted char or string
         if(type != T_CHAR_LIT && type != T_STRING_LIT) { return null; }
         StringBuilder str = new StringBuilder();
