@@ -10,17 +10,26 @@ public final class Preprocessor implements TokenSource {
     private Preprocessor include;
     private boolean first;
 
-    private Preprocessor(TokenSource src, ErrorHandler hndlr, LinkedList<Token> asm, LinkedList<Token> alloc) {
-        source = src; handler = hndlr; allocations = alloc; assemblies = asm; first = true; include = null;
-    }
-
     public Preprocessor(TokenSource source, ErrorHandler handler) {
-        this(source, handler, new LinkedList<Token>(), new LinkedList<Token>());
         if(source == null) throw new NullPointerException("TokenSource must not be null");
+        this.source = source; this.handler = handler; include = null; first = true;
+        defined = new java.util.TreeSet<Token>();
+        allocations = new LinkedList<Token>();
+        assemblies = new LinkedList<Token>();
     }
 
     public Preprocessor(String file, ErrorHandler handler) {
         this(TokenSource.Default.Get(file, handler), handler);
+    }
+
+    private Preprocessor(Preprocessor includer, String file) {
+        handler = includer.handler;
+        source = TokenSource.Default.Get(file, handler);
+        allocations = includer.allocations;
+        assemblies = include.assemblies;
+        defined = includer.defined;
+        include = null;
+        first = true;
     }
 
     public int getLine() { return (include != null)? include.getLine() : source.getLine(); }
@@ -111,7 +120,7 @@ public final class Preprocessor implements TokenSource {
                     else if(t.isString()) {
                         String file = t.format();
                         if(file != null) {
-                            include = new Preprocessor(TokenSource.Default.Get(t.format(), handler), handler, assemblies, allocations);
+                            include = new Preprocessor(this, t.format());
                             Token tok = include.nextToken();
                             if(!tok.isEOF()) return tok;
                             include = null;

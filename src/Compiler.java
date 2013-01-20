@@ -2,18 +2,31 @@ package antelope;
 
 public class Compiler {
     public static void main(String[] args) {
-        int errors = 0;
         boolean showTokens = true;  // TOGGLE THESE FOR DEBUGGING OUTPUT
         boolean showErrors = true;  // TOGGLE THESE FOR DEBUGGING OUTPUT
-        java.util.LinkedList<Token> src = Preprocessor.process("Test.antler", null);
+        ErrorHandler.Sorter errors = new ErrorHandler.Sorter();
+        Preprocessor src = new Preprocessor("Test.antler", errors);
 
-        for(Token t : src) {
-            if(t.isError()) {
-                errors++;
-                if(showErrors) { System.out.println(t); }
-            } else if(showTokens) { System.out.println(t); }
+        int prevLine = 1;
+        Token t = src.nextToken();
+        while(!t.isEOF()) {
+            if(showTokens) {
+                int line = src.getLine();
+                if(line != prevLine) {
+                    System.out.println();
+                    for(int l = line; l < 1000; l *= 10)
+                        System.out.print(' ');
+                    System.out.print(line);
+                    System.out.print(": ");
+                }
+                System.out.print(t);
+                prevLine = line;
+            }
+            t = src.nextToken();
         }
 
-        System.out.println("\nFinished with "+errors+" errors.");
+        if(showErrors) {
+            errors.flush();
+        }
     }
 }

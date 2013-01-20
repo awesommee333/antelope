@@ -20,6 +20,7 @@ public interface ErrorHandler {
         public void handle(String file, int line, String message) {
             messages.add(new Message(file, line, message));
         }
+        public void flush() { flush(new Default()); }
         public void flush(ErrorHandler handler) {
             for(Message m : messages) {
                 handler.handle(m.file, m.line, m.message);
