@@ -16,6 +16,14 @@ public interface TokenSource {
             this.source = source; this.name = name;
             this.handler = handler; line = 1;
         }
+        public Default(String file, ErrorHandler handler) throws java.io.IOException {
+            this(new java.io.BufferedReader(new java.io.FileReader(file)), file, handler);
+        }
+        public Default(java.io.Reader in, String name, ErrorHandler handler) throws java.io.IOException {
+            javax.swing.JTextArea jta = new javax.swing.JTextArea(); jta.read(in, name);
+            source = new StringBuilder(jta.getText()); this.name = name;
+            this.handler = handler; line = 1;
+        }
         public Token nextToken() {
             Token t;
             while(true) {
@@ -25,12 +33,6 @@ public interface TokenSource {
                 else if(!t.isComment()) { break; }
             }
             return t;
-        }
-        public static Default Get(String file, ErrorHandler handler) {
-            javax.swing.JTextArea jta = new javax.swing.JTextArea();
-            try { jta.read(new java.io.BufferedReader(new java.io.FileReader(file)), file); }
-            catch(java.io.IOException ioe) { return null; }
-            return new Default(new StringBuilder(jta.getText()), file, handler);
         }
     }
 }

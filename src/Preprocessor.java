@@ -11,20 +11,23 @@ public final class Preprocessor implements TokenSource {
     private boolean first;
 
     public Preprocessor(TokenSource source, ErrorHandler handler) {
-        if(source == null) throw new NullPointerException("TokenSource must not be null");
         this.source = source; this.handler = handler; include = null; first = true;
         defined = new java.util.TreeSet<Token>();
         allocations = new LinkedList<Token>();
         assemblies = new LinkedList<Token>();
     }
 
-    public Preprocessor(String file, ErrorHandler handler) {
-        this(TokenSource.Default.Get(file, handler), handler);
+    public Preprocessor(String file, ErrorHandler handler) throws java.io.IOException {
+        this(new TokenSource.Default(file, handler), handler);
     }
 
-    private Preprocessor(Preprocessor includer, String file) {
+    public Preprocessor(java.io.Reader in, String name, ErrorHandler handler) throws java.io.IOException {
+        this(new TokenSource.Default(in, name, handler), handler);
+    }
+
+    private Preprocessor(Preprocessor includer, String file) throws java.io.IOException {
         handler = includer.handler;
-        source = TokenSource.Default.Get(file, handler);
+        source = new TokenSource.Default(file, handler);
         allocations = includer.allocations;
         assemblies = include.assemblies;
         defined = includer.defined;
@@ -120,10 +123,16 @@ public final class Preprocessor implements TokenSource {
                     else if(t.isString()) {
                         String file = t.format();
                         if(file != null) {
-                            include = new Preprocessor(this, t.format());
-                            Token tok = include.nextToken();
-                            if(!tok.isEOF()) return tok;
-                            include = null;
+                            try {
+                                include = new Preprocessor(this, file);
+                                Token tok = include.nextToken();
+                                if(!tok.isEOF()) return tok;
+                                else include = null;
+                            }
+                            catch(java.io.IOException ioe) {
+                                handler.handle(srcName, line, "Unable to read from \""+file+'\"');
+                                include = null;
+                            }
                         }
                     }
                     else
