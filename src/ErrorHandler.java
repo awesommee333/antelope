@@ -10,7 +10,9 @@ public interface ErrorHandler {
             this.printStream = printStream;
         }
         public void handle(String file, int line, String message) {
-            printStream.println(file+':'+line+": "+message);
+            if(file != null && file.length() > 0) {
+                printStream.println(file+':'+line+": "+message);
+            } else { printStream.println(message); }
         }
     }
 

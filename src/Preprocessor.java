@@ -121,18 +121,15 @@ public final class Preprocessor implements TokenSource {
                     if(line != getLine())
                         handler.handle(srcName, line, msg);
                     else if(t.isString()) {
-                        String file = t.format();
-                        if(file != null) {
-                            try {
-                                include = new Preprocessor(this, file);
-                                Token tok = include.nextToken();
-                                if(!tok.isEOF()) return tok;
-                                else include = null;
-                            }
-                            catch(java.io.IOException ioe) {
-                                handler.handle(srcName, line, "Unable to read from \""+file+'\"');
-                                include = null;
-                            }
+                        try {
+                            include = new Preprocessor(this, t.value);
+                            Token tok = include.nextToken();
+                            if(!tok.isEOF()) return tok;
+                            else include = null;
+                        }
+                        catch(java.io.IOException ioe) {
+                            handler.handle(srcName, line, "Unable to read from \""+t.value+'\"');
+                            include = null;
                         }
                     }
                     else
