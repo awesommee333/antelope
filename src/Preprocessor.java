@@ -1,10 +1,17 @@
 package antelope;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.File;
 
 public final class Preprocessor implements TokenSource {
-    public final java.util.TreeSet<Token> defined;
+    public final String startingPath;
+    public final LinkedList<String> directories;
     public final LinkedList<Token> allocations; // Will eventually replace these lists
     public final LinkedList<Token> assemblies;  // with proper syntax-tree constructs.
+    public final HashSet<Token> defined;
     public final ErrorHandler handler;
     public final TokenSource source;
     private Preprocessor include;
@@ -12,22 +19,42 @@ public final class Preprocessor implements TokenSource {
 
     public Preprocessor(TokenSource source, ErrorHandler handler) {
         this.source = source; this.handler = handler; include = null; first = true;
-        defined = new java.util.TreeSet<Token>();
+        directories = new LinkedList<String>();
         allocations = new LinkedList<Token>();
         assemblies = new LinkedList<Token>();
+        defined = new HashSet<Token>();
+        startingPath = null;
     }
 
-    public Preprocessor(String file, ErrorHandler handler) throws java.io.IOException {
+    public Preprocessor(String file, ErrorHandler handler) throws IOException {
         this(new TokenSource.Default(file, handler), handler);
     }
 
-    public Preprocessor(java.io.Reader in, String name, ErrorHandler handler) throws java.io.IOException {
+    public Preprocessor(Reader in, String name, ErrorHandler handler) throws IOException {
         this(new TokenSource.Default(in, name, handler), handler);
     }
 
-    private Preprocessor(Preprocessor includer, String file) throws java.io.IOException {
+    private Preprocessor(Preprocessor includer, String file) throws IOException {
+        File f = new File(file);
+        if(!f.isAbsolute()) {
+            f = new File(includer.startingPath, file);
+            boolean exists = f.exists();
+            if(!exists) {
+                for(String dir : directories) {
+                    f = new File(dir, file);
+                    exists = f.exists();
+                    if(exists) break;
+                }
+            }
+            if(!exists)
+                throw new FileNotFoundException("File not found: "+file);
+            file = f.getAbsolutePath();
+        }
+
         handler = includer.handler;
+        startingPath = f.getAbsoluteFile().getParent();
         source = new TokenSource.Default(file, handler);
+        directories = includer.directories;
         allocations = includer.allocations;
         assemblies = include.assemblies;
         defined = includer.defined;
@@ -127,7 +154,11 @@ public final class Preprocessor implements TokenSource {
                             if(!tok.isEOF()) return tok;
                             else include = null;
                         }
-                        catch(java.io.IOException ioe) {
+                        catch(FileNotFoundException ioe) {
+                            handler.handle(srcName, line, "File not found: \""+t.value+'\"');
+                            include = null;
+                        }
+                        catch(IOException ioe) {
                             handler.handle(srcName, line, "Unable to read from \""+t.value+'\"');
                             include = null;
                         }

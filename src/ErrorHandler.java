@@ -1,12 +1,14 @@
 package antelope;
+import java.util.TreeSet;
+import java.io.PrintStream;
 
 public interface ErrorHandler {
     public void handle(String file, int line, String message);
 
     public static class Default implements ErrorHandler {
-        public java.io.PrintStream printStream;
+        public PrintStream printStream;
         public Default() { printStream = System.out; }
-        public Default(java.io.PrintStream printStream) {
+        public Default(PrintStream printStream) {
             this.printStream = printStream;
         }
         public void handle(String file, int line, String message) {
@@ -17,8 +19,8 @@ public interface ErrorHandler {
     }
 
     public static class Sorter implements ErrorHandler {
-        public final java.util.TreeSet<Message> messages;
-        public Sorter() { messages = new java.util.TreeSet<Message>(); }
+        public final TreeSet<Message> messages;
+        public Sorter() { messages = new TreeSet<Message>(); }
         public void handle(String file, int line, String message) {
             messages.add(new Message(file, line, message));
         }

@@ -1,4 +1,5 @@
 package antelope;
+import java.io.*;
 
 public interface TokenSource {
     public Token nextToken();
@@ -16,10 +17,10 @@ public interface TokenSource {
             this.source = source; this.name = name;
             this.handler = handler; line = 1;
         }
-        public Default(String file, ErrorHandler handler) throws java.io.IOException {
-            this(new java.io.BufferedReader(new java.io.FileReader(file)), file, handler);
+        public Default(String file, ErrorHandler handler) throws IOException {
+            this(new BufferedReader(new FileReader(file)), file, handler);
         }
-        public Default(java.io.Reader in, String name, ErrorHandler handler) throws java.io.IOException {
+        public Default(java.io.Reader in, String name, ErrorHandler handler) throws IOException {
             javax.swing.JTextArea jta = new javax.swing.JTextArea(); jta.read(in, name);
             source = new StringBuilder(jta.getText()); this.name = name;
             this.handler = handler; line = 1;
