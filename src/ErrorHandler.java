@@ -18,6 +18,10 @@ public interface ErrorHandler {
         }
     }
 
+    public static class None implements ErrorHandler {
+        public void handle(String file, int line, String message) { }
+    }
+
     public static class Sorter implements ErrorHandler {
         public final TreeSet<Message> messages;
         public Sorter() { messages = new TreeSet<Message>(); }

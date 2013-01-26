@@ -18,7 +18,7 @@ public interface TokenSource {
             this.handler = handler; line = 1;
         }
         public Default(String file, ErrorHandler handler) throws IOException {
-            this(new BufferedReader(new FileReader(file)), file, handler);
+            this(new BufferedReader(new FileReader(file)), new File(file).getName(), handler);
         }
         public Default(java.io.Reader in, String name, ErrorHandler handler) throws IOException {
             javax.swing.JTextArea jta = new javax.swing.JTextArea(); jta.read(in, name);

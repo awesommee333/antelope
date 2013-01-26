@@ -16,54 +16,64 @@ public final class Preprocessor implements TokenSource {
     public final TokenSource source;
     private Preprocessor include;
     private boolean first;
+    private int ifDepth;
 
-    public Preprocessor(TokenSource source, ErrorHandler handler) {
-        this.source = source; this.handler = handler; include = null; first = true;
-        directories = new LinkedList<String>();
+    public Preprocessor(TokenSource source, LinkedList<String> directories, ErrorHandler handler) {
+        this.source = source; this.directories = directories; this.handler = handler;
+        include = null; first = true; startingPath = null; ifDepth = 0;
         allocations = new LinkedList<Token>();
         assemblies = new LinkedList<Token>();
         defined = new HashSet<Token>();
-        startingPath = null;
     }
 
-    public Preprocessor(String file, ErrorHandler handler) throws IOException {
-        this(new TokenSource.Default(file, handler), handler);
-    }
-
-    public Preprocessor(Reader in, String name, ErrorHandler handler) throws IOException {
-        this(new TokenSource.Default(in, name, handler), handler);
-    }
-
-    private Preprocessor(Preprocessor includer, String file) throws IOException {
-        File f = new File(file);
-        if(!f.isAbsolute()) {
-            f = new File(includer.startingPath, file);
-            boolean exists = f.exists();
-            if(!exists) {
-                for(String dir : directories) {
-                    f = new File(dir, file);
-                    exists = f.exists();
-                    if(exists) break;
-                }
-            }
-            if(!exists)
-                throw new FileNotFoundException("File not found: "+file);
-            file = f.getAbsolutePath();
+    public Preprocessor(String file, LinkedList<String> directories, ErrorHandler handler) throws IOException {
+        this.directories = directories;
+        File f = getFile(file);
+        if(f == null) {
+            throw new FileNotFoundException("File not found: "+file);
         }
 
-        handler = includer.handler;
         startingPath = f.getAbsoluteFile().getParent();
-        source = new TokenSource.Default(file, handler);
-        directories = includer.directories;
-        allocations = includer.allocations;
-        assemblies = include.assemblies;
-        defined = includer.defined;
+        source = new TokenSource.Default(f.getPath(), handler);
+        allocations = new LinkedList<Token>();
+        assemblies = new LinkedList<Token>();
+        defined = new HashSet<Token>();
+        this.handler = handler;
         include = null;
         first = true;
+        ifDepth = 0;
+    }
+
+    public Preprocessor(String file, Preprocessor parent) throws IOException {
+        File f = parent.getFile(file);
+        if(f == null) {
+            throw new FileNotFoundException("File not found: "+file);
+        }
+
+        handler = parent.handler;
+        directories = parent.directories;
+        startingPath = f.getAbsoluteFile().getParent();
+        source = new TokenSource.Default(f.getPath(), handler);
+        allocations = parent.allocations;
+        assemblies = parent.assemblies;
+        defined = parent.defined;
+        include = null;
+        first = true;
+        ifDepth = 0;
     }
 
     public int getLine() { return (include != null)? include.getLine() : source.getLine(); }
     public String getName() { return (include != null)? include.getName() : source.getName(); }
+
+    public File getFile(String file) {
+        File f = new File(startingPath, file);
+        if(f.exists()) return f;
+        for(String dir : directories) {
+            f = new File(dir, file);
+            if(f.exists()) return f;
+        }
+        return null;
+    }
 
     private Token clearLine(String errorMessage, int line) {
         handler.handle(getName(), line, errorMessage);
@@ -149,18 +159,16 @@ public final class Preprocessor implements TokenSource {
                         handler.handle(srcName, line, msg);
                     else if(t.isString()) {
                         try {
-                            include = new Preprocessor(this, t.value);
+                            include = new Preprocessor(t.value, this);
                             Token tok = include.nextToken();
                             if(!tok.isEOF()) return tok;
                             else include = null;
                         }
                         catch(FileNotFoundException ioe) {
                             handler.handle(srcName, line, "File not found: \""+t.value+'\"');
-                            include = null;
                         }
                         catch(IOException ioe) {
                             handler.handle(srcName, line, "Unable to read from \""+t.value+'\"');
-                            include = null;
                         }
                     }
                     else
@@ -168,11 +176,8 @@ public final class Preprocessor implements TokenSource {
                     msg = "Missing identifier after comma";
                 } while(t == Token.COMMA && line == getLine());
             }
-            else if(t == Token.IF) {
-                // INSERT CODE!
-            }
             else if(t == Token.ERROR) {
-                t = nextToken();
+                t = source.nextToken();
                 if(line != getLine())
                     handler.handle(srcName, line, "<INSERT ERROR MESSAGE>");
                 else if(t.isString())
@@ -180,12 +185,37 @@ public final class Preprocessor implements TokenSource {
                 else
                     t = clearLine("Error message must be a string literal", line);
             }
+            else if(t == Token.ENDIF) {
+                t = source.nextToken();
+                if(line == getLine())
+                    t = clearLine("Unexpected symbol after #endif: "+t, line);
+                if(ifDepth < 1)
+                    handler.handle(srcName, line, "Unexpected #endif");
+                else ifDepth--;
+            }
             else {
-                t = clearLine("Invalid directive: #"+t, line);
+                boolean isElse = (t == Token.ELSE);
+                if(isElse && ifDepth < 1)
+                    handler.handle(srcName, line, "Unexpected #else");
+                else if(t == Token.IF || isElse) {
+                    if(isElse) { ifDepth--; }
+                    t = doCondition(isElse, line);
+                }
+                else {
+                    t = clearLine("Invalid directive: #"+t, line);
+                }
             }
             prevLine = line;
         }
         first = false;
+        if(t.isEOF() && ifDepth > 0) {
+            if(ifDepth == 1) { handler.handle(srcName, getLine(), "Missing #endif"); }
+            else { handler.handle(srcName, getLine(), "Missing "+ifDepth+" #endifs"); }
+        }
         return t;
+    }
+
+    private Token doCondition(boolean isElse, int line) {
+        return clearLine("Not implemented yet "+(isElse?"(#else)":"(#if)"), line); // For now
     }
 }
