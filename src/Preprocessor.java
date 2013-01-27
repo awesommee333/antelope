@@ -170,6 +170,7 @@ public final class Preprocessor implements TokenSource {
                         catch(IOException ioe) {
                             handler.handle(srcName, line, "Unable to read from \""+t.value+'\"');
                         }
+                        t = source.nextToken();
                     }
                     else
                         t = clearLine("String literal expected after #include. Found: "+t, line);
@@ -180,8 +181,12 @@ public final class Preprocessor implements TokenSource {
                 t = source.nextToken();
                 if(line != getLine())
                     handler.handle(srcName, line, "<INSERT ERROR MESSAGE>");
-                else if(t.isString())
+                else if(t.isString()) {
                     handler.handle(srcName, line, t.toString());
+                    t = source.nextToken();
+                    if(line == getLine())
+                        t = clearLine("Unexpected symbol after #error message: "+t, line);
+                }
                 else
                     t = clearLine("Error message must be a string literal", line);
             }
@@ -196,7 +201,7 @@ public final class Preprocessor implements TokenSource {
             else {
                 boolean isElse = (t == Token.ELSE);
                 if(isElse && ifDepth < 1)
-                    handler.handle(srcName, line, "Unexpected #else");
+                    t = clearLine("Unexpected #else", line);
                 else if(t == Token.IF || isElse) {
                     if(isElse) { ifDepth--; }
                     t = doCondition(isElse, line);
@@ -216,6 +221,6 @@ public final class Preprocessor implements TokenSource {
     }
 
     private Token doCondition(boolean isElse, int line) {
-        return clearLine("Not implemented yet "+(isElse?"(#else)":"(#if)"), line); // For now
+        Token t = source.nextToken();
     }
 }

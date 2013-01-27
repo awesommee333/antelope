@@ -7,10 +7,9 @@ public class Compiler {
         System.out.println("\nUSAGE: Antelope [Options] [Files]\n");
         System.out.println("  Options:\n");
         System.out.println("    -d [VALUE(;VALUE)*]     Define values as with #define.\n");
-        System.out.println("    -l [PATH(;PATH)*]       Path(s) of library directory(es).\n");
+        System.out.println("    -l [PATH(;PATH)*]       Path(s) of library directory(s).\n");
         System.out.println("  Files:\n");
-        System.out.println("    FILE1 FILE2 FILE3...    File(s) (or directories) to compile");
-        System.out.println("                            (all *.antler files per directory).\n");
+        System.out.println("    FILE1 FILE2 FILE3...    Path(s) of file(s) to compile.\n");
         System.exit(0);
     }
 
