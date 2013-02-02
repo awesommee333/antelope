@@ -45,7 +45,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||`INIT`||<font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `init` `{` <font face="arial black" color="#AAAAFF">(</font> `STATEMENT`<font face="arial black" color="#AAAAFF">)`*`</font> `}`||Static Initialization Block (happens "before" main). The `$` requires it to be "interpreted".||
 ||> _`ADT`_||`ENUM` <font face="arial black" color="#AAAAFF">|</font> `TYPEDEF` <font face="arial black" color="#AAAAFF">|</font> `SW_VAR` <font face="arial black" color="#AAAAFF">|</font> `IFACE` <font face="arial black" color="#AAAAFF">|</font> `STRUCT` <font face="arial black" color="#AAAAFF">|</font> `COFUNC`||Abstract Data-Type Declarations.||
 ||`ENUM`||`enum` `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> `{` <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `}`||Enumeration Type-Declaration.||
-||`TYPEDEF`||<font face="arial black" color="#AAAAFF">[</font> `new` <font face="arial black" color="#AAAAFF">]</font> `type` `IDENT` `=` `TYPE` `;`||Type Definition ("`new type`" creates a distinct new type, rather than just an alias).||
+||`TYPEDEF`||<font face="arial black" color="#AAAAFF">[</font> `new` <font face="arial black" color="#AAAAFF">]</font> `type` `P_DT` `=` `TYPE` `;`||Type Definition ("`new type`" creates a distinct new type, rather than just an alias).||
 ||`SW_VAR`||`switch` `{` <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `}` `IDENT`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">[</font> `=` `EXPR` <font face="arial black" color="#AAAAFF">]</font> `;`||Switch-Variable Declaration.||
 ||`IFACE`||`iface` `P_DT` `{` <font face="arial black" color="#AAAAFF">(</font> `VARDEC` `;` <font face="arial black" color="#AAAAFF">|</font> `V_FUNC` <font face="arial black" color="#AAAAFF">)`*`</font> `}`||Interface Type-Declaration.||
 ||`STRUCT`||`struct` `P_DT` `{` <font face="arial black" color="#AAAAFF">(</font> _`MEMBER`_ <font face="arial black" color="#AAAAFF">)`*`</font> `}`||Structure Type-Declaration.||
@@ -144,8 +144,8 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * `Init { `*`Block`*` code; }`
    * `Enum { `*`Token`*`[] values; }`
    * `SWVar { `*`Token`*`[] values; }`
-   * `TypeDef { `*`Type`*` type; `*`Bool`*` isNew; }`
    * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; }`
+   * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
    * `Struct { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Func`*`[] constructors; `*`Func`*` destructor; }`
    * `<Member> { }`
      * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` alias; `*`Expression`*` init; }`
