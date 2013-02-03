@@ -135,6 +135,7 @@ public class Token implements Comparable<Token> {
     public static final Token NULL   = new Token(T_KEY_VALUE, "null");
     public static final Token THIS   = new Token(T_KEY_VALUE, "this");
     public static final Token TRUE   = new Token(T_KEY_VALUE, "true");
+    public static final Token ELIF     = new Token(T_USER_IDENT, "elif"    );
     public static final Token ENDIF    = new Token(T_USER_IDENT, "endif"   );
     public static final Token ERROR    = new Token(T_USER_IDENT, "error"   );
     public static final Token DEFINE   = new Token(T_USER_IDENT, "define"  );

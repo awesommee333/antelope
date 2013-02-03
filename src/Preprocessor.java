@@ -75,6 +75,10 @@ public final class Preprocessor implements TokenSource {
         return null;
     }
 
+    private void error(String message, int line) {
+        handler.handle(getName(), line, message);
+    }
+
     private Token clearLine(String errorMessage, int line) {
         handler.handle(getName(), line, errorMessage);
         line = getLine(); Token t;
@@ -91,34 +95,33 @@ public final class Preprocessor implements TokenSource {
         }
         int prevLine = getLine();
         Token t = source.nextToken();
-        String srcName = getName();
         while(t == Token.POUND) {
             int line = getLine();
             t = source.nextToken();
             if(line == prevLine && first) {
-                handler.handle(srcName, prevLine, "Directive not on its own line");
+                error("Directive is not on its own line", prevLine);
                 first = false;
             }
             else if(line != getLine()) {
                 t = clearLine("Missing directive after '#'", line);
             }
             else if(t == Token.DEFINE) {
-                String msg = "Missing arguments after #define";
+                String message = "Missing arguments after #define";
                 do {
                     t = source.nextToken();
                     if(line != getLine())
-                        handler.handle(srcName, line, msg);
+                        error(message, line);
                     else if(t.isIdentifier())
                         defined.add(t);
                     else
                         t = clearLine("Identifier expected after #define. Found: "+t, line);
-                    msg = "Missing identifier after comma";
+                    message = "Missing identifier after comma";
                 } while(t == Token.COMMA && line == getLine());
             }
             else if(t == Token.ASSEMBLY) {
                 t = nextToken();
                 if(line != getLine())
-                    handler.handle(srcName, line, "Missing arguments after #assembly");
+                    error("Missing arguments after #assembly", line);
                 else if(!t.isString())
                     t = clearLine("Code for #assembly must be a string literal", line);
                 else
@@ -127,7 +130,7 @@ public final class Preprocessor implements TokenSource {
             else if(t == Token.ALLOCATE) {
                 t = nextToken();
                 if(line != getLine())
-                    handler.handle(srcName, line, "Missing arguments after #allocate");
+                    error("Missing arguments after #allocate", line);
                 else if(!t.isString())
                     t = clearLine("Address for #allocate must be a string literal", line);
                 else {
@@ -152,11 +155,11 @@ public final class Preprocessor implements TokenSource {
                 }
             }
             else if(t == Token.INCLUDE) {
-                String msg = "Missing arguments after #include";
+                String message = "Missing arguments after #include";
                 do {
                     t = source.nextToken();
                     if(line != getLine())
-                        handler.handle(srcName, line, msg);
+                        error(message, line);
                     else if(t.isString()) {
                         try {
                             include = new Preprocessor(t.value, this);
@@ -165,24 +168,24 @@ public final class Preprocessor implements TokenSource {
                             else include = null;
                         }
                         catch(FileNotFoundException ioe) {
-                            handler.handle(srcName, line, "File not found: \""+t.value+'\"');
+                            error("File not found: \""+t.value+'\"', line);
                         }
                         catch(IOException ioe) {
-                            handler.handle(srcName, line, "Unable to read from \""+t.value+'\"');
+                            error("Unable to read from \""+t.value+'\"', line);
                         }
                         t = source.nextToken();
                     }
                     else
                         t = clearLine("String literal expected after #include. Found: "+t, line);
-                    msg = "Missing identifier after comma";
+                    message = "Missing identifier after comma";
                 } while(t == Token.COMMA && line == getLine());
             }
             else if(t == Token.ERROR) {
                 t = source.nextToken();
                 if(line != getLine())
-                    handler.handle(srcName, line, "<INSERT ERROR MESSAGE>");
+                    error("<INSERT ERROR MESSAGE>", line);
                 else if(t.isString()) {
-                    handler.handle(srcName, line, t.toString());
+                    error(t.toString(), line);
                     t = source.nextToken();
                     if(line == getLine())
                         t = clearLine("Unexpected symbol after #error message: "+t, line);
@@ -195,32 +198,131 @@ public final class Preprocessor implements TokenSource {
                 if(line == getLine())
                     t = clearLine("Unexpected symbol after #endif: "+t, line);
                 if(ifDepth < 1)
-                    handler.handle(srcName, line, "Unexpected #endif");
+                    error("Unexpected #endif", line);
                 else ifDepth--;
             }
+            else if(t == Token.IF || t == Token.ELSE || t == Token.ELIF) {
+                if(ifDepth < 1 && t != Token.IF)
+                    t = clearLine("Unexpected #"+t, line);
+                else
+                    t = doCondition(t, line);
+            }
             else {
-                boolean isElse = (t == Token.ELSE);
-                if(isElse && ifDepth < 1)
-                    t = clearLine("Unexpected #else", line);
-                else if(t == Token.IF || isElse) {
-                    if(isElse) { ifDepth--; }
-                    t = doCondition(isElse, line);
-                }
-                else {
-                    t = clearLine("Invalid directive: #"+t, line);
-                }
+                t = clearLine("Invalid directive: #"+t, line);
             }
             prevLine = line;
         }
         first = false;
         if(t.isEOF() && ifDepth > 0) {
-            if(ifDepth == 1) { handler.handle(srcName, getLine(), "Missing #endif"); }
-            else { handler.handle(srcName, getLine(), "Missing "+ifDepth+" #endifs"); }
+            if(ifDepth == 1) { error("Missing #endif", getLine()); }
+            else { error("Missing "+ifDepth+" #endifs", getLine()); }
         }
         return t;
     }
 
-    private Token doCondition(boolean isElse, int line) {
+    private Token doCondition(Token kind, int line) {
         Token t = source.nextToken();
+        if(kind == Token.IF) ifDepth++;
+        boolean[] state = {false};
+
+        if(line == getLine()) {
+            if(kind == Token.ELSE)
+                t = clearLine("Unexpected symbol after #"+kind+": "+t, line);
+            else { t = doOr(t, state, line); }
+            if(line == getLine())
+                t = clearLine("Unexpected symbol after #"+kind+" condition: "+t, line);
+        }
+        else if(kind != Token.ELSE) {
+            error("Missing condition after #"+kind, line);
+            state[0] = (kind == Token.IF);
+        }
+
+        if(!state[0]) {
+            int levels = 1;
+            while(levels > 0) {
+                while(t != Token.POUND && !t.isEOF()) {
+                    line = getLine();
+                    t = source.nextToken();
+                }
+                t = source.nextToken();
+                int current = getLine();
+                if(t.isEOF()) { return t; }
+                else if(line == current) {
+                    error("Directive is not on its own line", line);
+                }
+                else {
+                    if(t == Token.IF) levels++;
+                    else if(t == Token.ENDIF) levels--;
+                    else if(levels == 1) {
+                        if(t == Token.ELSE)
+                            return source.nextToken();
+                        if(t == Token.ELIF)
+                            return doCondition(t, current);
+                    }
+                }
+            }
+        }
+        return t;
+    }
+
+    private Token doOr(Token t, boolean[] state, int line) {
+        t = doAnd(t, state, line);
+        while(t == Token.OR && line == getLine()) {
+            boolean other = state[0];
+            t = source.nextToken();
+            if(line != getLine()) {
+                error("Missing value after '||' (must all be on same line)", line);
+                return t;
+            }
+            t = doAnd(t, state, line);
+            state[0] |= other;
+        }
+        return t;
+    }
+
+    private Token doAnd(Token t, boolean[] state, int line) {
+        t = doValue(t, state, line);
+        while(t == Token.AND && line == getLine()) {
+            boolean other = state[0];
+            t = source.nextToken();
+            if(line != getLine()) {
+                error("Missing value after '&&' (must all be on same line)", line);
+                return t;
+            }
+            t = doValue(t, state, line);
+            state[0] &= other;
+        }
+        return t;
+    }
+
+    private Token doValue(Token t, boolean[] state, int line) {
+        boolean invert = (t == Token.NOT);
+        if(invert) {
+            t = source.nextToken();
+            if(line != getLine()) {
+                error("Missing value after '!' (must all be on same line)", line);
+                return t;
+            }
+        }
+        if(t == Token.L_PAREN) {
+            t = source.nextToken();
+            if(line != getLine()) {
+                error("Missing value after '(' (must all be on same line)", line);
+                return t;
+            }
+            t = doOr(t, state, line);
+            if(line != getLine()) {
+                error("Missing value after '(' (must all be on same line)", line);
+                return t;
+            }
+            if(t != Token.R_PAREN) {
+                return clearLine("Missing ')'", line);
+            }
+            return source.nextToken();
+        }
+        if(!t.isIdentifier())
+            return clearLine("Idendifier expected. Found: "+t, line);
+        state[0] = (defined.contains(t) ^ invert);
+        return source.nextToken();
     }
 }
