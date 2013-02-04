@@ -69,6 +69,7 @@ public class Compiler {
             catch(java.io.IOException ioe) {
                 errors.handle(null,1,"Unable to read from \""+source+'\"');
             }
+            System.out.println();
         }
 
         errors.flush();
