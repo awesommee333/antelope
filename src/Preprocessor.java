@@ -98,11 +98,11 @@ public final class Preprocessor implements TokenSource {
         while(t == Token.POUND) {
             int line = getLine();
             t = source.nextToken();
-            if(line == prevLine && first) {
+            if(line == prevLine && !first) {
                 error("Directive is not on its own line", prevLine);
                 first = false;
             }
-            else if(line != getLine()) {
+            if(line != getLine()) {
                 t = clearLine("Missing directive after '#'", line);
             }
             else if(t == Token.DEFINE) {
@@ -111,15 +111,17 @@ public final class Preprocessor implements TokenSource {
                     t = source.nextToken();
                     if(line != getLine())
                         error(message, line);
-                    else if(t.isIdentifier())
-                        defined.add(t);
-                    else
+                    else if(!t.isIdentifier())
                         t = clearLine("Identifier expected after #define. Found: "+t, line);
+                    else {
+                        defined.add(t);
+                        t = source.nextToken();
+                    }
                     message = "Missing identifier after comma";
                 } while(t == Token.COMMA && line == getLine());
             }
             else if(t == Token.ASSEMBLY) {
-                t = nextToken();
+                t = source.nextToken();
                 if(line != getLine())
                     error("Missing arguments after #assembly", line);
                 else if(!t.isString())
@@ -128,7 +130,7 @@ public final class Preprocessor implements TokenSource {
                     allocations.add(t);
             }
             else if(t == Token.ALLOCATE) {
-                t = nextToken();
+                t = source.nextToken();
                 if(line != getLine())
                     error("Missing arguments after #allocate", line);
                 else if(!t.isString())
@@ -260,6 +262,10 @@ public final class Preprocessor implements TokenSource {
                             return doCondition(t, current);
                     }
                 }
+            }
+            if(t == Token.ENDIF) {
+            	ifDepth--;
+            	return source.nextToken();
             }
         }
         return t;

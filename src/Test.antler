@@ -5,3 +5,5 @@ B,B,B
 #else
 C,C,C
 #endif
+#define BAR, JAR, MAR
+XYZ;
