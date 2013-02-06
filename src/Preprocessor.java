@@ -324,6 +324,7 @@ public final class Preprocessor implements TokenSource {
             if(t != Token.R_PAREN) {
                 return clearLine("Missing ')'", line);
             }
+            state[0] ^= invert;
             return source.nextToken();
         }
         if(!t.isIdentifier())

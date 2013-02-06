@@ -1,9 +1,11 @@
-#define FOO
+#define FOO, MOO
 A,A,A
 #if !FOO
 B,B,B
-#else
+#elif !(!FOO || !MOO)
 C,C,C
+#else
+D,D,D
 #endif
 #define BAR, JAR, MAR
 XYZ;
