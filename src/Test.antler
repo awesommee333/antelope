@@ -1,11 +1,5 @@
-#define FOO, MOO
-A,A,A
-#if !FOO
-B,B,B
-#elif !(!FOO || !MOO)
-C,C,C
-#else
-D,D,D
-#endif
-#define BAR, JAR, MAR
-XYZ;
+Antler!
+Including Test2.txt....
+#define ANTLER
+#include "Test2.txt"
+Success!!!

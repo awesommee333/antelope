@@ -44,6 +44,11 @@ public interface ErrorHandler {
             this.file = file; this.line = line; this.message = message; id = ID++;
         }
         public int compareTo(Message other) {
+            boolean ofn = (other.file == null);
+            if(file == null)
+                if(!ofn) return -1;
+            else if(ofn)
+                return 1;
             int value = file.compareTo(other.file);
             return (value != 0)? value :
                 (line != other.line)? (line < other.line ? -1 : 1) :

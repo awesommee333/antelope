@@ -19,6 +19,8 @@ public class Compiler {
         HashSet<Token> defined = new HashSet<Token>();
         char last = 0;
         for(String arg : args) {
+            if(arg.length() < 1)
+                continue;
             if(arg.charAt(0) == '-') {
                 if(arg.length() != 2) { showUsage(); }
                 last = Character.toLowerCase(arg.charAt(1));
@@ -48,6 +50,7 @@ public class Compiler {
         for(String source : sources) {
             try {
                 Preprocessor src = new Preprocessor(source, directories, errors);
+                for(Token def : defined) { src.defined.add(def); }
 
                 int prevLine = 0;
                 Token t = src.nextToken();
