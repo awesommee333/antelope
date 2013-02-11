@@ -12,6 +12,7 @@ public final class Preprocessor implements TokenSource {
     public final LinkedList<Token> allocations; // Will eventually replace these lists
     public final LinkedList<Token> assemblies;  // with proper syntax-tree constructs.
     public final HashSet<Token> defined;
+    public final HashSet<File> included;
     public final ErrorHandler handler;
     public final TokenSource source;
     private Preprocessor include;
@@ -23,6 +24,7 @@ public final class Preprocessor implements TokenSource {
         include = null; first = true; startingPath = null; ifDepth = 0;
         allocations = new LinkedList<Token>();
         assemblies = new LinkedList<Token>();
+        included = new HashSet<File>();
         defined = new HashSet<Token>();
     }
 
@@ -37,24 +39,25 @@ public final class Preprocessor implements TokenSource {
         source = new TokenSource.Default(f.getPath(), handler);
         allocations = new LinkedList<Token>();
         assemblies = new LinkedList<Token>();
+        included = new HashSet<File>();
         defined = new HashSet<Token>();
         this.handler = handler;
+        included.add(f);
         include = null;
         first = true;
         ifDepth = 0;
     }
 
-    public Preprocessor(String file, Preprocessor parent) throws IOException {
-        File f = parent.getFile(file);
-        if(f == null)
-            throw new FileNotFoundException("File not found: "+file);
+    private Preprocessor(File file, Preprocessor parent) throws IOException {
         handler = parent.handler;
         directories = parent.directories;
-        startingPath = f.getAbsoluteFile().getParent();
-        source = new TokenSource.Default(f.getPath(), handler);
+        startingPath = file.getAbsoluteFile().getParent();
+        source = new TokenSource.Default(file.getPath(), handler);
         allocations = parent.allocations;
         assemblies = parent.assemblies;
+        included = parent.included;
         defined = parent.defined;
+        included.add(file);
         include = null;
         first = true;
         ifDepth = 0;
@@ -103,56 +106,80 @@ public final class Preprocessor implements TokenSource {
                     error("#"+t+" is not on its own line", prevLine);
                     first = false;
                 }
-                if(t == Token.DEFINE) {
-                    String message = "Missing arguments after #define";
+                if(t == Token.DEFINE || t == Token.UNDEF) {
+                    Token kind = t;
+                    String message = "Missing arguments after #"+t;
                     do {
                         t = source.nextToken();
                         if(line != getLine() || t.isEOF())
                             error(message, line);
                         else if(!t.isIdentifier())
-                            t = clearLine("Identifier expected after #define. Found: "+t, line);
+                            t = clearLine("Identifier expected following #"+kind+". Found: "+t, line);
                         else {
-                            defined.add(t);
+                            if(kind == Token.DEFINE) { defined.add(t); }
+                            else { defined.remove(t); }
                             t = source.nextToken();
                         }
-                        message = "Missing identifier after comma";
-                    } while(t == Token.COMMA && line == getLine());
+                        message = "Missing identifier after #"+kind+" ... ,";
+                    } while(t == Token.COMMA);
+                    if(line == getLine() && !t.isEOF()) {
+                        t = clearLine("Unexpected symbol following #"+kind+": "+t, line);
+                    }
                 }
                 else if(t == Token.ASSEMBLY) {
                     t = source.nextToken();
                     if(line != getLine() || t.isEOF())
                         error("Missing arguments after #assembly", line);
                     else if(!t.isString())
-                        t = clearLine("Code for #assembly must be a string literal", line);
-                    else
+                        t = clearLine("String literal expected after #assembly. Found: "+t, line);
+                    else {
                         allocations.add(t);
+                        t = source.nextToken();
+                        if(line == getLine() && !t.isEOF())
+                            t = clearLine("Unexpected symbol following #assembly: "+t, line);
+                    }
                 }
                 else if(t == Token.ALLOCATE) {
                     t = source.nextToken();
                     if(line != getLine() || t.isEOF())
                         error("Missing arguments after #allocate", line);
                     else if(!t.isString())
-                        t = clearLine("Address for #allocate must be a string literal", line);
+                        t = clearLine("String literal expected after #allocate. Found: "+t, line);
                     else {
                         int limit = 0;
                         Token addr = t;
                         t = source.nextToken();
+                        boolean minus = false;
 
                         if(line == getLine() && !t.isEOF()) {
-                            boolean minus = (t == Token.MINUS);
-                            if(!t.isNumber()) {
+                            minus = (t == Token.MINUS);
+                            if(t.isNumber()) {
+                                limit = t.number;
+                                t = source.nextToken();
+                                if(line == getLine() && !t.isEOF())
+                                    t = clearLine("Unexpected symbol following #allocate: "+t, line);
+                            }
+                            else {
                                 if(!minus && t != Token.PLUS)
-                                    t = clearLine("Unexpected symbol after #allocate: "+t, line);
+                                    t = clearLine("Unexpected symbol following #allocate: "+t, line);
                                 else {
                                     t = source.nextToken();
-                                    if(line == getLine() && !t.isNumber() && !t.isEOF())
-                                        t = clearLine("Unexpected symbol after #allocate: "+t, line);
+                                    if(line == getLine() && !t.isEOF()) {
+                                        if(!t.isNumber())
+                                            t = clearLine("Unexpected symbol following #allocate: "+t, line);
+                                        else {
+                                            limit = t.number;
+                                            t = source.nextToken();
+                                            if(line == getLine() && !t.isEOF())
+                                                t = clearLine("Unexpected symbol following #allocate: "+t, line);
+                                        }
+                                    }
                                 }
                             }
-                            limit = (minus ? -t.number : t.number);
                         }
 
                         allocations.add(addr);
+                        if(minus) allocations.add(Token.MINUS);
                         allocations.add(Token.makeNumber(limit));
                     }
                 }
@@ -164,10 +191,16 @@ public final class Preprocessor implements TokenSource {
                             error(message, line);
                         else if(t.isString()) {
                             try {
-                                include = new Preprocessor(t.format(), this);
-                                Token tok = include.nextToken();
-                                if(!tok.isEOF()) return tok;
-                                else include = null;
+                                String file = t.format();
+                                File f = getFile(file);
+                                if(f == null)
+                                    error("File not found: \""+t.format()+'\"', line);
+                                else if(included.add(f)) { // Skip re-included files.
+                                    include = new Preprocessor(f, this);
+                                    Token tok = include.nextToken();
+                                    if(!tok.isEOF()) return tok;
+                                    else include = null;
+                                }
                             }
                             catch(FileNotFoundException ioe) {
                                 error("File not found: \""+t.format()+'\"', line);
@@ -177,10 +210,14 @@ public final class Preprocessor implements TokenSource {
                             }
                             t = source.nextToken();
                         }
-                        else
+                        else {
                             t = clearLine("String literal expected after #include. Found: "+t, line);
-                        message = "Missing identifier after comma";
-                    } while(t == Token.COMMA && line == getLine());
+                        }
+                        message = "Missing identifier following #include ... ,";
+                    } while(t == Token.COMMA);
+                    if(line == getLine() && !t.isEOF()) {
+                        t = clearLine("Unexpected symbol following #include: "+t, line);
+                    }
                 }
                 else if(t == Token.ERROR) {
                     t = source.nextToken();
@@ -190,7 +227,7 @@ public final class Preprocessor implements TokenSource {
                         error(t.format(), line);
                         t = source.nextToken();
                         if(line == getLine() && !t.isEOF())
-                            t = clearLine("Unexpected symbol after #error message: "+t, line);
+                            t = clearLine("Unexpected symbol following #error: "+t, line);
                     }
                     else
                         t = clearLine("Error message must be a string literal", line);
@@ -234,7 +271,7 @@ public final class Preprocessor implements TokenSource {
                 t = clearLine("Unexpected symbol after #"+kind+": "+t, line);
             else { t = doOr(t, state, line); }
             if(line == getLine() && !t.isEOF())
-                t = clearLine("Unexpected symbol after #"+kind+" condition: "+t, line);
+                t = clearLine("Unexpected symbol following #"+kind+": "+t, line);
         }
         else if(kind != Token.ELSE) {
             error("Missing condition after #"+kind, line);

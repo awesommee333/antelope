@@ -68,6 +68,15 @@ public class Compiler {
                     prevLine = line;
                     t = src.nextToken();
                 }
+
+                if(src.allocations.size() > 0) {
+                    System.out.println("\nALLOCATIONS ("+source+"):");
+                    for(Token tok : src.allocations) System.out.print(" "+tok);
+                }
+                if(src.assemblies.size() > 0) {
+                    System.out.println("\nASSEMBLIES ("+source+"):");
+                    for(Token tok : src.assemblies) System.out.print(" "+tok);
+                }
             }
             catch(java.io.IOException ioe) {
                 errors.handle(null,1,"Unable to read from \""+source+'\"');
