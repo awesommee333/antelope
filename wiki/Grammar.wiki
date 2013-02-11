@@ -30,6 +30,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||`COMMENT`||`//` _`NonLineBreak`_<font face="arial black" color="#AAAAFF">`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">|</font> `/*` _`NonStarSlash`_<font face="arial black" color="#AAAAFF">`*`</font> `*/`||Comments may be intermixed (are removed / ignored when found).||
 ||`P_INC`||`#include` `STRING`||Include source code from another file or url.||
 ||`P_DEF`||`#define` `IDENT`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||Define an identifier (as a "flag" for `P_IF`).||
+||`P_UNDEF`||`#undef` `IDENT`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||Un-Define an identifier (as a "flag" for `P_IF`).||
 ||`P_IF`||`#if` _`P_OR`_ _`CODE`_ <font face="arial black" color="#AAAAFF">(</font> `#elif` _`P_OR`_ _`CODE`_ <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">[</font> `#else` _`SRC`_ <font face="arial black" color="#AAAAFF">]</font> `#endif`||Designate code to be used on conditions based on `#define`d values.||
 ||> _`P_OR`_||_`P_AND`_ <font face="arial black" color="#AAAAFF">(</font> `|``|` _`P_AND`_ <font face="arial black" color="#AAAAFF">)`*`</font>||Conditional-"OR" for `P_IF`.||
 ||> _`P_AND`_||_`P_VAL`_ <font face="arial black" color="#AAAAFF">(</font> `&``&` _`P_VAL`_ <font face="arial black" color="#AAAAFF">)`*`</font>||Conditional-"AND" for `P_IF`.||
