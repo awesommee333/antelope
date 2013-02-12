@@ -46,7 +46,7 @@ public class Token implements Comparable<Token> {
     // For use with formatting strings and parsing tokens:
     private static final String CTRL_CHARS = "\b\n\r\t\\\'\"\0";
     private static final String ESC_CHARS = "bnrt\\\'\"0";
-    private static final String DOUBLE_OPS = "&|=+-><";
+    private static final String DOUBLE_OPS = "&|=+-><?";
     private static final String EQ_OPS = "<>!+-*%/&|^";
 
     // Predefined Tokens (grouped by type)
@@ -66,6 +66,8 @@ public class Token implements Comparable<Token> {
     public static final Token MOD       = new Token(T_OPERATOR, "%" );
     public static final Token OR        = new Token(T_OPERATOR, "||");
     public static final Token POUND     = new Token(T_OPERATOR, "#" );
+    public static final Token QUESTION  = new Token(T_OPERATOR, "?" );
+    public static final Token QUESTION2 = new Token(T_OPERATOR, "??");
     public static final Token R_BRACE   = new Token(T_OPERATOR, "}" );
     public static final Token R_BRACKET = new Token(T_OPERATOR, "]" );
     public static final Token R_PAREN   = new Token(T_OPERATOR, ")" );
@@ -207,7 +209,7 @@ public class Token implements Comparable<Token> {
     // Static Token making methods
 
     public static Token makeError(String message) {
-        return new Token(T_ANNOTATION, message);
+        return new Token(T_ERROR, message);
     }
     public static Token makeComment(String comment) {
         return new Token(T_COMMENT, comment);
@@ -338,7 +340,7 @@ public class Token implements Comparable<Token> {
         // Handle operators
         char next = (idx < len-1)? source.charAt(idx+1) : 0;
         if(start == next && DOUBLE_OPS.indexOf(start) >= 0) {
-            if(idx++ < len-2 && start == '>' && source.charAt(idx+1) == '>') { idx++; }
+            idx++;
             if((start == '>' || start == '<') && source.charAt(idx+1) == '=') { idx++; }
         }
         else if((next == '=' && EQ_OPS.indexOf(start) >= 0) || (next == '>' && (start == '=' || start == '-'))) {

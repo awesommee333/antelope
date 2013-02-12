@@ -1,17 +1,4 @@
-A A
-#assembly
-B B
-#assembly Foo
-C C
-#assembly "Bar1"
-D D
-#assembly "Bar2" "MAR"
-E E
-#assembly "Bar3", "Mar"
-F F
-#assembly "Bar4", x .
-G G
-#assembly "Bar5" "Mar"
-H H
-#assembly "Bar6" far
-I I
++ ++ - -- --- +++
+< << > >> <<< >>>
+? ?? ! !! ??? !!!
+The End. \
