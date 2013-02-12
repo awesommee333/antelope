@@ -349,7 +349,7 @@ public class Token implements Comparable<Token> {
         source.delete(0,idx+1);
         Token t = PRE_DEFINED.get(value);
         if(t != null) { return t; }
-        return makeError("Unexpected symbol found: "+value);
+        return new Token(T_OPERATOR, value);
     }
 
     private static Token getIdentToken(String value) {
