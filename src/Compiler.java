@@ -16,7 +16,7 @@ public class Compiler {
     public static void main(String[] args) {
         LinkedList<String> directories = new LinkedList<String>();
         LinkedList<String> sources = new LinkedList<String>();
-        HashSet<Token> defined = new HashSet<Token>();
+        LinkedList<Token> defined = new LinkedList<Token>();
         char last = 0;
         for(String arg : args) {
             if(arg.length() < 1)
@@ -47,43 +47,40 @@ public class Compiler {
 
         ErrorHandler.Sorter errors = new ErrorHandler.Sorter();
 
-        for(String source : sources) {
-            try {
-                Preprocessor src = new Preprocessor(source, directories, errors);
-                for(Token def : defined) { src.defined.add(def); }
+        Preprocessor src = Preprocessor.process(errors, directories.toArray(new String[0]), sources.toArray(new String[sources.size()]));
+        for(Token def : defined) { src.define(def); }
 
-                int prevLine = 0;
-                Token t = src.nextToken();
-                while(!t.isEOF()) {
-                    int line = src.getLine();
-                    if(line != prevLine) {
-                        System.out.println();
-                        for(int l = line; l < 1000; l *= 10)
-                            System.out.print('0');
-                        System.out.print(line);
-                        System.out.print(':');
-                    }
-                    System.out.print(' ');
-                    System.out.print(t);
-                    prevLine = line;
-                    t = src.nextToken();
-                }
-
-                if(src.allocations.size() > 0) {
-                    System.out.println("\nALLOCATIONS ("+source+"):");
-                    for(Token tok : src.allocations) System.out.print(" "+tok);
-                }
-                if(src.assemblies.size() > 0) {
-                    System.out.println("\nASSEMBLIES ("+source+"):");
-                    for(Token tok : src.assemblies) System.out.print(" "+tok);
-                }
+        int prevLine = 0;
+        Token t = src.nextToken();
+        while(!t.isEOF()) {
+            int line = src.getLine();
+            if(line != prevLine) {
+                System.out.println();
+                for(int l = line; l < 1000; l *= 10)
+                    System.out.print('0');
+                System.out.print(line);
+                System.out.print(':');
             }
-            catch(java.io.IOException ioe) {
-                errors.handle(null,1,"Unable to read from \""+source+'\"');
-            }
-            System.out.println();
+            System.out.print(' ');
+            System.out.print(t);
+            prevLine = line;
+            t = src.nextToken();
         }
 
+        Token[] assemblies = src.getAssemblies();
+        Token[] allocations = src.getAllocations();
+
+        if(allocations.length > 0) {
+            System.out.println("\nALLOCATIONS:");
+            for(Token tok : allocations) System.out.print(" "+tok);
+        }
+
+        if(assemblies.length > 0) {
+            System.out.println("\nASSEMBLIES:");
+            for(Token tok : assemblies) System.out.print(" "+tok);
+        }
+
+        System.out.println();
         errors.flush();
     }
 }

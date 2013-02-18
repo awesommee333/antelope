@@ -7,69 +7,96 @@ import java.io.Reader;
 import java.io.File;
 
 public final class Preprocessor implements TokenSource {
-    public final String startingPath;
-    public final LinkedList<String> directories;
-    public final LinkedList<Token> allocations; // Will eventually replace these lists
-    public final LinkedList<Token> assemblies;  // with proper syntax-tree constructs.
-    public final HashSet<Token> defined;
-    public final HashSet<File> included;
-    public final ErrorHandler handler;
     public final TokenSource source;
+    private final String startingPath;
+    private final Shared shared;
     private Preprocessor include;
     private boolean first;
     private int ifDepth;
 
-    public Preprocessor(TokenSource source, LinkedList<String> directories, ErrorHandler handler) {
-        this.source = source; this.directories = directories; this.handler = handler;
-        include = null; first = true; startingPath = null; ifDepth = 0;
-        allocations = new LinkedList<Token>();
-        assemblies = new LinkedList<Token>();
-        included = new HashSet<File>();
-        defined = new HashSet<Token>();
+    private static class Shared {
+        public final String[] directories;
+        public final LinkedList<Token> allocations; // Will eventually replace these lists
+        public final LinkedList<Token> assemblies;  // with proper syntax-tree constructs.
+        public final HashSet<Token> defined;
+        public final HashSet<File> included;
+        public final ErrorHandler handler;
+
+        public Shared(String[] directories, ErrorHandler handler) {
+            allocations = new LinkedList<Token>();
+            assemblies = new LinkedList<Token>();
+            included = new HashSet<File>();
+            defined = new HashSet<Token>();
+            this.directories = directories;
+            this.handler = handler;
+        }
     }
 
-    public Preprocessor(String file, LinkedList<String> directories, ErrorHandler handler) throws IOException {
-        this.directories = directories;
-        File f = getFile(file);
-        if(f == null) {
-            throw new FileNotFoundException("File not found: "+file);
-        }
+    public Preprocessor(ErrorHandler handler, String[] directories, TokenSource source) {
+        this.source = source; include = null; first = true; startingPath = null; ifDepth = 0;
+        shared = new Shared(directories, handler);
+    }
 
+    public Preprocessor(ErrorHandler handler, String[] directories, String file) throws IOException {
+        shared = new Shared(directories, handler);
+        File f = getFile(file);
+        if(f == null)
+            throw new FileNotFoundException("File not found: "+file);
         startingPath = f.getAbsoluteFile().getParent();
         source = new TokenSource.Default(f.getPath(), handler);
-        allocations = new LinkedList<Token>();
-        assemblies = new LinkedList<Token>();
-        included = new HashSet<File>();
-        defined = new HashSet<Token>();
-        this.handler = handler;
-        included.add(f);
+        shared.included.add(f);
         include = null;
         first = true;
         ifDepth = 0;
     }
 
-    private Preprocessor(File file, Preprocessor parent) throws IOException {
-        handler = parent.handler;
-        directories = parent.directories;
+    public static Preprocessor process(ErrorHandler handler, String[] directories, String...files) {
+        Preprocessor p = null;
+        for(String file: files) {
+            try {
+                if(p == null)
+                    p = new Preprocessor(handler, directories, file);
+                else {
+                    File f = p.getFile(file);
+                    if(f == null)
+                        handler.handle(null, 0, "File not found: "+file);
+                    else {
+                        Preprocessor inc = p;
+                        p = new Preprocessor(f, p.shared);
+                        p.include = inc;
+                    }
+                }
+            }
+            catch(FileNotFoundException fnfe) {
+                handler.handle(null, 0, "File not found: "+file);
+            }
+            catch(IOException ioe) {
+                handler.handle(null, 0, "Unable to read from "+file);
+            }
+        }
+        return p;
+    }
+
+    private Preprocessor(File file, Shared shared) throws IOException {
+        this.shared = shared;
         startingPath = file.getAbsoluteFile().getParent();
-        source = new TokenSource.Default(file.getPath(), handler);
-        allocations = parent.allocations;
-        assemblies = parent.assemblies;
-        included = parent.included;
-        defined = parent.defined;
-        included.add(file);
+        source = new TokenSource.Default(file.getPath(), shared.handler);
+        shared.included.add(file);
         include = null;
         first = true;
         ifDepth = 0;
     }
 
+    public void define(Token def) { shared.defined.add(def); }
     public int getLine() { return (include != null)? include.getLine() : source.getLine(); }
     public String getName() { return (include != null)? include.getName() : source.getName(); }
+    public Token[] getAllocations() { return shared.allocations.toArray(new Token[shared.allocations.size()]); }
+    public Token[] getAssemblies() { return shared.assemblies.toArray(new Token[shared.assemblies.size()]); }
 
     public File getFile(String file) {
         File f = new File(startingPath, file);
         if(f.exists()) return f;
-        for(String dir : directories) {
+        for(String dir : shared.directories) {
             f = new File(dir, file);
             if(f.exists()) return f;
         }
@@ -77,11 +104,11 @@ public final class Preprocessor implements TokenSource {
     }
 
     private void error(String message, int line) {
-        handler.handle(getName(), line, message);
+        shared.handler.handle(getName(), line, message);
     }
 
     private Token clearLine(String errorMessage, int line) {
-        handler.handle(getName(), line, errorMessage);
+        shared.handler.handle(getName(), line, errorMessage);
         line = getLine(); Token t;
         do { t = source.nextToken(); }
         while(line == getLine() && !t.isNewLine() && !t.isEOF());
@@ -116,8 +143,8 @@ public final class Preprocessor implements TokenSource {
                         else if(!t.isIdentifier())
                             t = clearLine("Identifier expected following #"+kind+". Found: "+t, line);
                         else {
-                            if(kind == Token.DEFINE) { defined.add(t); }
-                            else { defined.remove(t); }
+                            if(kind == Token.DEFINE) { define(t); }
+                            else { shared.defined.remove(t); }
                             t = source.nextToken();
                         }
                         message = "Missing identifier after #"+kind+" ... ,";
@@ -133,7 +160,7 @@ public final class Preprocessor implements TokenSource {
                     else if(!t.isString())
                         t = clearLine("String literal expected after #assembly. Found: "+t, line);
                     else {
-                        allocations.add(t);
+                        shared.allocations.add(t);
                         t = source.nextToken();
                         if(line == getLine() && !t.isEOF())
                             t = clearLine("Unexpected symbol following #assembly: "+t, line);
@@ -178,9 +205,9 @@ public final class Preprocessor implements TokenSource {
                             }
                         }
 
-                        allocations.add(addr);
-                        if(minus) allocations.add(Token.MINUS);
-                        allocations.add(Token.makeNumber(limit));
+                        shared.allocations.add(addr);
+                        if(minus) shared.allocations.add(Token.MINUS);
+                        shared.allocations.add(Token.makeNumber(limit));
                     }
                 }
                 else if(t == Token.INCLUDE) {
@@ -195,8 +222,8 @@ public final class Preprocessor implements TokenSource {
                                 File f = getFile(file);
                                 if(f == null)
                                     error("File not found: \""+t.format()+'\"', line);
-                                else if(included.add(f)) { // Skip re-included files.
-                                    include = new Preprocessor(f, this);
+                                else if(shared.included.add(f)) { // Skip re-included files.
+                                    include = new Preprocessor(f, shared);
                                     Token tok = include.nextToken();
                                     if(!tok.isEOF()) return tok;
                                     else include = null;
@@ -368,7 +395,7 @@ public final class Preprocessor implements TokenSource {
         }
         if(!t.isIdentifier())
             return clearLine("Idendifier expected. Found: "+t, line);
-        state[0] = (defined.contains(t) ^ invert);
+        state[0] = (shared.defined.contains(t) ^ invert);
         return source.nextToken();
     }
 }
