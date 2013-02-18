@@ -4,12 +4,12 @@ import java.util.HashSet;
 
 public class Compiler {
     private static void showUsage() {
-        System.out.println("\nUSAGE: Antelope [Options] [Files]\n");
-        System.out.println("  Options:\n");
-        System.out.println("    -d [VALUE(;VALUE)*]     Define values as with #define.\n");
-        System.out.println("    -l [PATH(;PATH)*]       Path(s) of library directory(s).\n");
-        System.out.println("  Files:\n");
-        System.out.println("    FILE1 FILE2 FILE3...    Path(s) of file(s) to compile.\n");
+        System.out.println("\nUSAGE: Antelope [Options] [Files]");
+        System.out.println("  Options:");
+        System.out.println("    -d value1;value2;...   Define values as with #define.");
+        System.out.println("    -l path1;path2;...     Path(s) of library directory(s).");
+        System.out.println("  Files:");
+        System.out.println("    FILE1 FILE2 FILE3...   Path(s) of file(s) to compile.\n");
         System.exit(0);
     }
 
@@ -47,12 +47,15 @@ public class Compiler {
 
         ErrorHandler.Sorter errors = new ErrorHandler.Sorter();
 
-        Preprocessor src = Preprocessor.process(errors, directories.toArray(new String[0]), sources.toArray(new String[sources.size()]));
+        Preprocessor src = new Preprocessor(errors, directories.toArray(new String[0]), sources.toArray(new String[sources.size()]));
         for(Token def : defined) { src.define(def); }
 
         int prevLine = 0;
-        Token t = src.nextToken();
-        while(!t.isEOF()) {
+        boolean wasEOF = false;
+        while(true) {
+            Token t = src.nextToken();
+            if(wasEOF && t.isEOF()) break;
+            wasEOF = t.isEOF();
             int line = src.getLine();
             if(line != prevLine) {
                 System.out.println();
@@ -64,7 +67,6 @@ public class Compiler {
             System.out.print(' ');
             System.out.print(t);
             prevLine = line;
-            t = src.nextToken();
         }
 
         Token[] assemblies = src.getAssemblies();

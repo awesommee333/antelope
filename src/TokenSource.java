@@ -13,18 +13,32 @@ public interface TokenSource {
         public final ErrorHandler handler;
         public int getLine() { return line; }
         public String getName() { return name; }
+
         public Default(StringBuilder source, String name, ErrorHandler handler) {
             this.source = source; this.name = name;
             this.handler = handler; line = 1;
         }
-        public Default(String file, ErrorHandler handler) throws IOException {
-            this(new BufferedReader(new FileReader(file)), new File(file).getName(), handler);
-        }
-        public Default(java.io.Reader in, String name, ErrorHandler handler) throws IOException {
-            javax.swing.JTextArea jta = new javax.swing.JTextArea(); jta.read(in, name);
-            source = new StringBuilder(jta.getText()); this.name = name;
+
+        public Default(String file, ErrorHandler handler) {
             this.handler = handler; line = 1;
+            name = new File(file).getName();
+            StringBuilder src;
+            try {
+                javax.swing.JTextArea jta = new javax.swing.JTextArea();
+                jta.read(new FileReader(file), name);
+                src = new StringBuilder(jta.getText());
+            }
+            catch(FileNotFoundException fnfe) {
+                handler.handle(null, 0, "File not found: "+name);
+                src = new StringBuilder();
+            }
+            catch(IOException ioe) {
+                handler.handle(null, 0, "Unable to read from "+name);
+                src = new StringBuilder();
+            }
+            source = src;
         }
+
         public Token nextToken() {
             Token t;
             while(true) {
@@ -35,5 +49,13 @@ public interface TokenSource {
             }
             return t;
         }
+    }
+
+    public static class Empty implements TokenSource {
+        public static final Empty Instance = new Empty();
+        public String getName() { return "<NONEXISTENT_FILE>"; }
+        public Token nextToken() { return Token.EOF; }
+        public int getLine() { return 1; }
+        private Empty() { }
     }
 }

@@ -51,7 +51,10 @@ public class Token implements Comparable<Token> {
 
     // Predefined Tokens (grouped by type)
     public static final Token EOF      = new Token(T_ANNOTATION, "END_OF_FILE");
+    public static final Token NEW_FILE = new Token(T_ANNOTATION, "NEW_FILE"   );
     public static final Token NEW_LINE = new Token(T_ANNOTATION, "NEW_LINE"   );
+    public static final Token NONE     = new Token(T_ANNOTATION, "NONE"       );
+    public static final Token UNKNOWN  = new Token(T_ANNOTATION, "UNKNOWN"    );
     public static final Token AND       = new Token(T_OPERATOR, "&&");
     public static final Token ARROW     = new Token(T_OPERATOR, "->");
     public static final Token AT        = new Token(T_OPERATOR, "@" );
@@ -148,7 +151,7 @@ public class Token implements Comparable<Token> {
     // Instance methods
 
     private boolean typeIsIn(byte t) { return (type & t) == t;    }
-    public boolean isAnnotation() { return typeIsIn(T_ANNOTATION);}
+    public boolean isAnnotation() { return type <  0x10;          }
     public boolean isAssignment() { return type == T_ASSIGN_OP;   }
     public boolean isBinNumber( ) { return type == T_BIN_NUMBER;  }
     public boolean isBitwiseOp( ) { return type == T_BITWISE_OP;  }
@@ -160,7 +163,6 @@ public class Token implements Comparable<Token> {
     public boolean isError(     ) { return type == T_ERROR;       }
     public boolean isHexNumber( ) { return type == T_HEX_NUMBER;  }
     public boolean isIdentifier() { return typeIsIn(T_IDENTIFIER);}
-    public boolean isUserIdent( ) { return type == T_USER_IDENT;  }
     public boolean isKeyword(   ) { return typeIsIn(T_KEYWORD);   }
     public boolean isNewLine(   ) { return this == NEW_LINE;      }
     public boolean isNumber(    ) { return typeIsIn(T_NUMBER);    }
@@ -168,6 +170,7 @@ public class Token implements Comparable<Token> {
     public boolean isPrimitive( ) { return type == T_PRIMITIVE;   }
     public boolean isString(    ) { return type == T_STRING_LIT;  }
     public boolean isUnaryOp(   ) { return type == T_UNARY_OP;    }
+    public boolean isUserIdent( ) { return type == T_USER_IDENT;  }
     public boolean isValue(     ) { return typeIsIn(T_VALUE);     }
 
     public int compareTo(Token t) {
