@@ -50,9 +50,11 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||`ENUM`||`enum` `IDENT` `{` `IDENT`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> `}`||Enumeration Type-Declaration.||
 ||`TYPEDEF`||<font face="arial black" color="#AAAAFF">[</font> `new` <font face="arial black" color="#AAAAFF">]</font> `type` `P_DT` `=` `TYPE` `;`||Type Definition ("new" for a distinct new type, rather than an _alias_).||
 ||`SW_VAR`||`switch` `{` `IDENT`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> `}` `IDENT` <font face="arial black" color="#AAAAFF">[</font> `=` `EXPR` <font face="arial black" color="#AAAAFF">]</font> `;`||Switch-Variable Declaration.||
-||`IFACE`||`iface` `P_DT` <font face="arial black" color="#AAAAFF">[</font> `:` `ID_ITEM`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">]</font><br>`{` <font face="arial black" color="#AAAAFF">(</font> `MFUNC` <font face="arial black" color="#AAAAFF">|</font> `MCTOR` <font face="arial black" color="#AAAAFF">|</font> `MDTOR` <font face="arial black" color="#AAAAFF">|</font> `OP` _`F_BODY`_ <font face="arial black" color="#AAAAFF">|</font> `VARDEC` `;` <font face="arial black" color="#AAAAFF">)`*`</font> `}`||Interface Type-Declaration.||
-||`STRUCT`||`struct` `P_DT`<br>`{` <font face="arial black" color="#AAAAFF">(</font> `MCOFUNC` <font face="arial black" color="#AAAAFF">|</font> `MFUNC` <font face="arial black" color="#AAAAFF">|</font> `MCTOR` <font face="arial black" color="#AAAAFF">|</font> `MDTOR` <font face="arial black" color="#AAAAFF">|</font> `VARDEC` `;` <font face="arial black" color="#AAAAFF">)`*`</font> `}`||Structure Type-Declaration.||
-||`COFUNC`||`cofunc` <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `P_DT`<br><font face="arial black" color="#AAAAFF">[</font>`{`<font face="arial black" color="#AAAAFF">(</font>`MCOFUNC` <font face="arial black" color="#AAAAFF">|</font> `MFUNC` <font face="arial black" color="#AAAAFF">|</font> `MCTOR` <font face="arial black" color="#AAAAFF">|</font> `MDTOR` <font face="arial black" color="#AAAAFF">|</font> `VARDEC` `;`<font face="arial black" color="#AAAAFF">)`*`</font>`}`<font face="arial black" color="#AAAAFF">]</font> _`F_BODY`_||Cofunction Type-Declaration (`$` designates function-body as "inline").||
+||`IFACE`||`iface` `P_DT` <font face="arial black" color="#AAAAFF">[</font> `:` `ID_ITEM`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">]</font> `{` _`IMEMBER`_<font face="arial black" color="#AAAAFF">`*`</font> `}`||Interface Type-Declaration.||
+||> _`IMEMBER`_||`MFUNC` <font face="arial black" color="#AAAAFF">|</font> `MCTOR` <font face="arial black" color="#AAAAFF">|</font> `MDTOR` <font face="arial black" color="#AAAAFF">|</font> `OP` _`F_BODY`_ <font face="arial black" color="#AAAAFF">|</font> `VARDEC` `;`||Interface Members.||
+||`STRUCT`||`struct` `P_DT` `{` _`SMEMBER`_<font face="arial black" color="#AAAAFF">`*`</font> `}`||Structure Type-Declaration.||
+||`COFUNC`||`cofunc` <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `P_DT` <font face="arial black" color="#AAAAFF">[</font> `{` _`SMEMBER`_<font face="arial black" color="#AAAAFF">`*`</font> `}` <font face="arial black" color="#AAAAFF">]</font> _`F_BODY`_||Cofunction Type-Declaration (`$` designates function-body as "inline").||
+||> _`SMEMBER`_||`SW_VAR` <font face="arial black" color="#AAAAFF">|</font> `MCOFUNC` <font face="arial black" color="#AAAAFF">|</font> `MFUNC` <font face="arial black" color="#AAAAFF">|</font> `MCTOR` <font face="arial black" color="#AAAAFF">|</font> `MDTOR` <font face="arial black" color="#AAAAFF">|</font> `VARDEC` `;`||Struct Members.||
 ||`FUNC`||`func` <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">(</font>`P_ID` `.`<font face="arial black" color="#AAAAFF">)`*`</font> `P_DT` <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">(</font>`P_ID` `.`<font face="arial black" color="#AAAAFF">)+</font> `P_OP` <font face="arial black" color="#AAAAFF">)</font> _`F_BODY`_||Function Declaration. The `$` designates that the function is "inline".||
 ||`CTOR`||`new` <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `ID_ITEM` _`F_BODY`_||Constuctor Declaration. The `$` designates an "inline" constructor.||
 ||`DTOR`||`delete` <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `ID_ITEM`<br><font face="arial black" color="#AAAAFF">(</font> `{` `STATEMENT`<font face="arial black" color="#AAAAFF">`*`</font> `}` <font face="arial black" color="#AAAAFF">|</font> `=>` `COMMAND` `;` <font face="arial black" color="#AAAAFF">|</font> `@` `UNARY` `;` <font face="arial black" color="#AAAAFF">)</font>||Destructor Declaration. The `$` designates an "inline" destructor.||
@@ -133,7 +135,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * Syntax:` ClassName { `*`Datatype`*` Member1; `*`DataType`*` Member2; }`
  * Sub-classes are hierarchically nested under their parent-classes.
  * Abstract (non-instantiable) classes are in `<`angle brackets`>`.
- * Arrays are denoted by `[`square brackets`]` after the datatype.
+ * Collections (arrays) are denoted by `[`square brackets`]` after the datatype.
  * Comments (notes) are listed in green after a double-slash: <font color="green">`// This is a comment`</font>.
 
 ==== The Classes: ====
@@ -150,11 +152,11 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
    * `Init { `*`Block`*` code; }`
    * `Enum { `*`Token`*`[] values; }`
-   * `SWVar { `*`Token`*`[] values; }`
    * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Entity`*`[] ifaces; }`
    * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
    * `Struct { `*`TParam`*`[] params; `*`Member`*`[] members; }`
    * `<Member> { }`
+     * `SwitchVar { `*`Token`*`[] values; }`
      * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` alias; `*`Expression`*` init; }`
        *  <font color="green">`// Type can be CONST for constants`</font>
      * `Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`
@@ -167,7 +169,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
      * `Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`
        *  <font color="green">`// kinds: if, switch, while, until, do, for`</font>
        * `If { `*`Block`*` elseCode; }`
-       * `Do { `*`Token`*` logic; int condPos; }`
+       * `Do { `*`Token`*` logic; `*`int`*` condPos; }`
        * `For { `*`Command`*` init; `*`Command`*` step; }`
    * `<Command> { }`
      * `VarDec { `*`Type`*` type; `*`Variable`*`[] vars; }`
