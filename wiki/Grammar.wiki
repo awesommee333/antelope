@@ -152,9 +152,9 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
    * `Init { `*`Block`*` code; }`
    * `Enum { `*`Token`*`[] values; }`
-   * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Entity`*`[] ifaces; }`
-   * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
+   * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Entity`*`[] parents; }`
    * `Struct { `*`TParam`*`[] params; `*`Member`*`[] members; }`
+   * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
    * `<Member> { }`
      * `SwitchVar { `*`Token`*`[] values; }`
      * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` alias; `*`Expression`*` init; }`
