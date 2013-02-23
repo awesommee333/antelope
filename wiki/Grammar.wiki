@@ -200,25 +200,25 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
  * Rule contents are "in quotes" to separate them from other text.
  * Descriptions of how syntax classes are used are in <font color="blue">*`Blue Bold`*</font>.
    * `ClassName { Contents, Listed, In, Order }`
+   * `"tokenValue"`, `F` (false), `N` (null)
    * `[An, Array, Of, Values]`
-   * "0" is also "`false`" or "`null`"
 
 ==== Walkthrough: ====
 
 `uint x = a + b * c;`
 
- * We start with the *`SOURCE`* rule, which resolves to "<font face="arial black" color="#AAAAFF">[</font> `NAMESPACE` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `USING` <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">(</font> `INIT` <font face="arial black" color="#AAAAFF">|</font> _`ADT`_ <font face="arial black" color="#AAAAFF">|</font> `FUNC` <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">[</font>`VARDEC`<font face="arial black" color="#AAAAFF">|</font>`CONST`<font face="arial black" color="#AAAAFF">]</font> `;` <font face="arial black" color="#AAAAFF">)`*`</font>".
+ * We start with the *`SOURCE`* rule, which resolves to "<font face="arial black" color="#AAAAFF">[</font> `NAMESPACE` <font face="arial black" color="#AAAAFF">]</font> `USING`<font face="arial black" color="#AAAAFF">`*`</font> <font face="arial black" color="#AAAAFF">(</font> `VARDEC` `;` <font face="arial black" color="#AAAAFF">|</font> `CONST` `;` <font face="arial black" color="#AAAAFF">|</font> `INIT` <font face="arial black" color="#AAAAFF">|</font> _`ADT`_ <font face="arial black" color="#AAAAFF">|</font> `FUNC` <font face="arial black" color="#AAAAFF">|</font> `CTOR` <font face="arial black" color="#AAAAFF">|</font> `DTOR` <font face="arial black" color="#AAAAFF">)`*`</font>".
  * *`SOURCE`* is further reduced to just "`VARDEC` `;`".
-   * *`VARDEC`* resolves to "`TYPE` <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">[</font> _`V_INIT`_ <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `@` `EXPR`<font face="arial black" color="#AAAAFF">,,1,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `=` `EXPR`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,2,,</font> <font face="arial black" color="#AAAAFF">|</font> `(` <font face="arial black" color="#AAAAFF">(</font> `IDENT`<font face="arial black" color="#AAAAFF">,,3,,</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `)` <font face="arial black" color="#AAAAFF">)</font> `:=` `EXPR`<font face="arial black" color="#AAAAFF">,,3,,</font>".
-   * <font color="#FF00CC">*`VARDEC`*</font> is further reduced to just "`TYPE` `IDENT`<font face="arial black" color="#AAAAFF">,,1,,</font> `=` `EXPR`<font face="arial black" color="#AAAAFF">,,2,,</font>".
+   * *`VARDEC`* resolves to "`TYPE` <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `IDENT` <font face="arial black" color="#AAAAFF">[</font> _`V_INIT`_ <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `@` `UNARY` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `=` `EXPR` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">[</font> `$` <font face="arial black" color="#AAAAFF">]</font> `IDENT` <font face="arial black" color="#AAAAFF">),,(,,</font><font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,,),,</font> `:=` `EXPR`".
+   * <font color="#FF00CC">*`VARDEC`*</font> is further reduced to just "`TYPE` `IDENT` `=` `EXPR`".
      * *`TYPE`* is similarly reduced to just "`P_ID`".
        * *`P_ID`* is reduced to "`IDENT`".
          * *`IDENT`* is matched to "`uint`" from the example source code.
-       * *`P_ID`* is "`uint`", stored as <font color="blue">*`Entity{"uint",[],0}`*</font>.
-     * *`TYPE`* is "`uint`", stored as <font color="blue">*`Type{Entity{"uint",[],0},[],0,0,0,0}`*</font>.
-     * *`IDENT`*<font face="arial black" color="#AAAAFF">,,1,,</font> is matched to "`x`".
+       * *`P_ID`* is "`uint`", stored as <font color="blue">*`Entity{"uint",[],N}`*</font>.
+     * *`TYPE`* is "`uint`", stored as <font color="blue">*`Type{Entity{"uint",[],N},[],F,F,F}`*</font>.
+     * *`IDENT`* is matched to "`x`".
      * The "`=`" is matched from the example source code.
-     * <font color="red">*`EXPR`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> resolves to "`BINCOND`", is reduced to "`TERNARY`", is reduced to "`COND_OR`", ...(etc.)..., is reduced to "`ADDSUB`".
+     * <font color="red">*`EXPR`*</font> resolves to "`BINCOND`", is reduced to "`TERNARY`", is reduced to "`COND_OR`", ...(etc.)..., is reduced to "`ADDSUB`".
        * *`ADDSUB`* is reduced to "`MULTDIV`<font face="arial black" color="#AAAAFF">,,1,,</font> `+` `MULTDIV`<font face="arial black" color="#AAAAFF">,,2,,</font>".
          * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,1,,</font> is reduced to "`CAST`".
            * *`CAST`* is reduced to "`UNARY`".
@@ -226,11 +226,11 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
                * *_`PRE_OP`_* is reduced to nothing (none of the optional prefix operations are used here).
                * *`VALUE`* is reduced to "`P_ID`", is reduced to "`IDENT`".
                  * *`IDENT`* is matched to "`a`" from the example source code.
-               * *`VALUE`* is "`a`", stored as <font color="blue">*`Value{"a"}`*</font>.
+               * *`VALUE`* is "`a`", stored as <font color="blue">*`Value{F,"a"}`*</font>.
                * *_`POST_OP`_* is reduced to nothing (none of the optional postfix operations are used here).
-             * *`UNARY`* is "`a`", stored as <font color="blue">*`Value{"a"}`*</font>.
-           * *`CAST`* is "`a`", stored as <font color="blue">*`Value{"a"}`*</font>.
-         * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,1,,</font> is "`a`", stored as <font color="blue">*`Value{"a"}`*</font>.
+             * *`UNARY`* is "`a`", stored as <font color="blue">*`Value{F,"a"}`*</font>.
+           * *`CAST`* is "`a`", stored as <font color="blue">*`Value{F,"a"}`*</font>.
+         * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,1,,</font> is "`a`", stored as <font color="blue">*`Value{F,"a"}`*</font>.
          * The "`+`" is matched from the example source code.
          * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> is reduced to "`CAST`<font face="arial black" color="#AAAAFF">,,1,,</font> `*` `CAST`<font face="arial black" color="#AAAAFF">,,2,,</font>".
            * *`CAST`*<font face="arial black" color="#AAAAFF">,,1,,</font> is reduced to "`UNARY`".
@@ -238,36 +238,47 @@ This walkthrough demonstrates how the grammar rules are followed in a [http://en
                * *_`PRE_OP`_* is reduced to nothing (none of the optional prefix operations are used here).
                * *`VALUE`* is reduced to "`P_ID`", is reduced to "`IDENT`".
                  * *`IDENT`* is matched to "`b`" from the example source code.
-               * *`VALUE`* is "`b`", stored as <font color="blue">*`Value{"b"}`*</font>.
+               * *`VALUE`* is "`b`", stored as <font color="blue">*`Value{F,"b"}`*</font>.
                * *_`POST_OP`_* is reduced to nothing (none of the optional postfix operations are used here).
-             * *`UNARY`* is "`b`", stored as <font color="blue">*`Value{"b"}`*</font>.
-           * *`CAST`*<font face="arial black" color="#AAAAFF">,,1,,</font> is "`b`", stored as <font color="blue">*`Value{"b"}`*</font>.
+             * *`UNARY`* is "`b`", stored as <font color="blue">*`Value{F,"b"}`*</font>.
+           * *`CAST`*<font face="arial black" color="#AAAAFF">,,1,,</font> is "`b`", stored as <font color="blue">*`Value{F,"b"}`*</font>.
            * The "`*`" is matched from the example source code.
            * *`CAST`*<font face="arial black" color="#AAAAFF">,,2,,</font> is reduced to "`UNARY`".
              * *`UNARY`* resolves to "_`PRE_OP`_ `VALUE` _`POST_OP`_".
                * *_`PRE_OP`_* is reduced to nothing (none of the optional prefix operations are used here).
                * *`VALUE`* is reduced to "`P_ID`", is reduced to "`IDENT`".
                  * *`IDENT`* is matched to "`c`" from the example source code.
-               * *`VALUE`* is "`c`", stored as <font color="blue">*`Value{"c"}`*</font>.
+               * *`VALUE`* is "`c`", stored as <font color="blue">*`Value{F,"c"}`*</font>.
                * *_`POST_OP`_* is reduced to nothing (none of the optional postfix operations are used here).
-             * *`UNARY`* is "`c`", stored as <font color="blue">*`Value{"c"}`*</font>.
-           * *`CAST`*<font face="arial black" color="#AAAAFF">,,2,,</font> is "`c`", stored as <font color="blue">*`Value{"c"}`*</font>.
-         * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> is "`b * c`", stored as <font color="blue">*`Operation{"*",Value{"b"},Value{"c"}}`*</font>.
-       * *`ADDSUB`* is "`a + b * c`", stored as <font color="blue">*`Operation{"+",Value{"a"},Operation{"*",...}}`*</font>.
-     * <font color="red">*`EXPR`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> is "`a + b * c`", stored as <font color="blue">*`Operation{"+",Value{"a"},Operation{"*",...}}`*</font>.
-   * <font color="#FF00CC">*`VARDEC`*</font> is "`uint x = a + b * c`", stored as<br><font color="blue">*`VarDec{Type{...},[Variable{Context{(global),[]},"x",Type{...},0,0,Operation{"+",...}}]}`*</font>.
+             * *`UNARY`* is "`c`", stored as <font color="blue">*`Value{F,"c"}`*</font>.
+           * *`CAST`*<font face="arial black" color="#AAAAFF">,,2,,</font> is "`c`", stored as <font color="blue">*`Value{F,"c"}`*</font>.
+         * <font color="#00AA00">*`MULTDIV`*</font><font face="arial black" color="#AAAAFF">,,2,,</font> is "`b * c`", stored as <font color="blue">*`Operation{F,"*",Value{F,"b"},Value{F,"c"}}`*</font>.
+       * *`ADDSUB`* is "`a + b * c`", stored as <font color="blue">*`Operation{F,"+",Value{F,"a"},Operation{F,"*",...}}`*</font>.
+     * <font color="red">*`EXPR`*</font> is "`a + b * c`", stored as <font color="blue">*`Operation{F,"+",Value{F,"a"},Operation{F,"*",...}}`*</font>.
+   * <font color="#FF00CC">*`VARDEC`*</font> is "`uint x = a + b * c`", stored as:
+     * <font color="blue">*`VarDec{ Type{...}, [Variable{ Context{(`_`default`_`),[]}, "x", Type{...}, F, N, Operation{F,"+",...} }] }`*</font>.
    * The "`;`" is matched from the example source code.
  * *`SOURCE`* is "`uint x = a + b * c;`", and thus the entire source has been parsed.
  * *`SOURCE`* is ultimately stored as:
-   * <font color="blue">*`Namespace { [], 0, [],`*</font>
-     * <font color="blue">*`[ Variable {`*</font>
-       * <font color="blue">*`Context { (global), [] }, "x",`*</font>
-       * <font color="blue">*`Type { Entity{"uint",[],0}, [], 0, 0, 0, 0 }, 0, 0,`*</font>
-       * <font color="blue">*`Operation { "+", Value{"a"},`*</font>
-         * <font color="blue">*`Operation { "*", Value{"b"}, Value{"c"} }`*</font>
-       * <font color="blue">*`}`*</font>
-     * <font color="blue">*`} ]`*</font>
-   * <font color="blue">*`}`*</font>
+   * <font color="blue">*`Namespace { ... }`*</font>
+     * <font color="blue">*`[ ], Null, [ ],`*</font>
+     * <font color="blue">*`[ ... ]`*</font>
+       * <font color="blue">*`Variable { ... }`*</font>
+         * <font color="blue">*`Context { (`_`default`_`), [ ] },`*</font>
+         * <font color="blue">*`Token { "x" },`*</font>
+         * <font color="blue">*`Type { ... }`*</font>
+           * <font color="blue">*`Entity { Token { "uint" }, [ ], Null }`*</font>
+           * <font color="blue">*`[ ], False, False, False`*</font>
+         * <font color="blue">*`False, Null,`*</font>
+         * <font color="blue">*`Operation { ... }`*</font>
+           * <font color="blue">*`False,`*</font>
+           * <font color="blue">*`Token { "+" },`*</font>
+           * <font color="blue">*`Value { False, Token { "a" } },`*</font>
+           * <font color="blue">*`Operation { ... }`*</font>
+             * <font color="blue">*`False,`*</font>
+             * <font color="blue">*`Token { "*" },`*</font>
+             * <font color="blue">*`Value { False, Token { "b" } },`*</font>
+             * <font color="blue">*`Value { False, Token { "c" } }`*</font>
 
 <br>
 ----
