@@ -146,14 +146,13 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` next; }`
  * `Using { `*`Token`*` alias; `*`Entity`*` entity; }`
  * `Context { `*`Namespace`*` namespace; `*`Using`*`[] usings; }`
- * `Constraint { `*`Entity`*` entity; `*`FuncPtr`*` signature; }`
- * `TParam { `*`Token`*` name; `*`Constraint`*`[] constraints; }`
+ * `TParam { `*`Token`*` name; `*`BaseType`*`[] constraints; }`
  * `Namespace { `*`TParam`*`[] params; `*`Namespace`*` parent; `*`Namespace`*`[] children; `*`Global`*`[] contents; }`
  * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
    * `Init { `*`Block`*` code; }`
    * `Enum { `*`Token`*`[] values; }`
-   * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Entity`*`[] parents; }`
    * `Struct { `*`TParam`*`[] params; `*`Member`*`[] members; }`
+   * `Iface { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Entity`*`[] parents; }`
    * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
    * `<Member> { }`
      * `SwitchVar { `*`Token`*`[] values; }`
