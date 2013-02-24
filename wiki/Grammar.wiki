@@ -161,8 +161,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
      * `Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`
      * `Cofunc { `*`Func`*` func; `*`Struct`*` struct; } `<font color="green">`// "@foo" args stored as if "Type foo@foo"`</font>
  * `Block { `*`Statement`*`[] code; `*`Bool`*` braces; }`
- * `<Statement> { }`
-   * `Label { `*`Token`*` name; }`
+ * `<Statement> { `*`Token`*` label; } `<font color="green">`// label for goto`</font>
    * `<Construct> { `*`Bool`*` ipret; `*`Block`*` code; }`
      * `ForEach { `*`Variable`*`[] vars; `*`Bool`*` def; `*`Expression`*` start,end,inc; }`
      * `Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`
