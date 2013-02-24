@@ -53,7 +53,6 @@ public class Token implements Comparable<Token> {
     public static final Token EOF      = new Token(T_ANNOTATION, "END_OF_FILE");
     public static final Token NEW_FILE = new Token(T_ANNOTATION, "NEW_FILE"   );
     public static final Token NEW_LINE = new Token(T_ANNOTATION, "NEW_LINE"   );
-    public static final Token NONE     = new Token(T_ANNOTATION, "NONE"       );
     public static final Token UNKNOWN  = new Token(T_ANNOTATION, "UNKNOWN"    );
     public static final Token AND       = new Token(T_OPERATOR, "&&");
     public static final Token ARROW     = new Token(T_OPERATOR, "->");
@@ -118,12 +117,12 @@ public class Token implements Comparable<Token> {
     public static final Token FOR       = new Token(T_KEYWORD, "for"     );
     public static final Token FUNC      = new Token(T_KEYWORD, "func"    );
     public static final Token IF        = new Token(T_KEYWORD, "if"      );
+    public static final Token INIT      = new Token(T_KEYWORD, "init"    );
     public static final Token INTERFACE = new Token(T_KEYWORD, "interface");
     public static final Token NAMESPACE = new Token(T_KEYWORD, "namespace");
     public static final Token NEW       = new Token(T_KEYWORD, "new"     );
     public static final Token RETURN    = new Token(T_KEYWORD, "return"  );
     public static final Token SIZEOF    = new Token(T_KEYWORD, "sizeof"  );
-    public static final Token STATIC    = new Token(T_KEYWORD, "static"  );
     public static final Token STRUCT    = new Token(T_KEYWORD, "struct"  );
     public static final Token SWITCH    = new Token(T_KEYWORD, "switch"  );
     public static final Token UNTIL     = new Token(T_KEYWORD, "until"   );

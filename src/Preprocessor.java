@@ -310,8 +310,8 @@ public final class Preprocessor implements TokenSource {
                 }
             }
             if(t == Token.ENDIF) {
-            	ifDepth--;
-            	return source.nextToken();
+                ifDepth--;
+                return source.nextToken();
             }
         }
         return t;

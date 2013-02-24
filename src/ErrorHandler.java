@@ -18,7 +18,7 @@ public interface ErrorHandler {
         }
     }
 
-    public static class None implements ErrorHandler {
+    public static class Empty implements ErrorHandler {
         public void handle(String file, int line, String message) { }
     }
 

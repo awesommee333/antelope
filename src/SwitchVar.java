@@ -1,9 +1,9 @@
 package antelope;
 
-public final class Enum extends Global {
+public final class SwitchVar extends Member {
     public final Token[] values;
     
-    public Enum(Context context, Token name, Token[] values) {
+    public SwitchVar(Context context, Token name, Token[] values) {
         super(context, name);
         this.values = values;
     }
