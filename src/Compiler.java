@@ -2,7 +2,7 @@ package antelope;
 import java.util.LinkedList;
 import java.util.HashSet;
 
-public class Compiler {
+public final class Compiler {
     private static void showUsage() {
         System.out.println("\nUSAGE: Antelope [Options] [Files]");
         System.out.println("  Options:");

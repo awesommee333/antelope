@@ -1,6 +1,6 @@
 package antelope;
 
-public class Token implements Comparable<Token> {
+public final class Token implements Comparable<Token> {
     public final String value; // String representation of Token
     public final int number;   // Numeric value (usage depends on type)
     private final byte type;   // Type of token
@@ -229,10 +229,19 @@ public class Token implements Comparable<Token> {
         return new Token(T_DEC_NUMBER, Integer.toString(num), num);
     }
 
-    public static Token makeIdent(String ident) throws Exception {
+    public static Token makeIdent(String ident) throws IllegalArgumentException {
         for(int i = 0; i < ident.length(); i++) {
             if(!isIdentChar(ident.charAt(i)))
-                throw new Exception("Invalid identifier: "+ident);
+                throw new IllegalArgumentException("Invalid identifier: "+ident);
+        } return getIdentToken(ident);
+    }
+
+    public static Token makeIdent(String ident, ErrorHandler handler) {
+        for(int i = 0; i < ident.length(); i++) {
+            if(!isIdentChar(ident.charAt(i))) {
+                handler.handle(null, 0, "Invalid identifier: "+ident);
+                return null;
+            }
         } return getIdentToken(ident);
     }
 
@@ -246,15 +255,39 @@ public class Token implements Comparable<Token> {
         return new Token(T_DEC_NUMBER, num, Integer.parseInt(num));
     }
 
-    public static Token makeChar(String ch) throws Exception {
+    public static Token makeNumber(String num, ErrorHandler handler) {
+        try { return makeNumber(num); }
+        catch(NumberFormatException nfe) {
+            handler.handle(null, 0, nfe.getMessage());
+            return null;
+        }
+    }
+
+    public static Token makeChar(String ch) throws IllegalArgumentException {
         if(!isValidChar(ch))
-            throw new Exception("Invalid character format: \'"+ch+'\'');
+            throw new IllegalArgumentException("Invalid character format: \'"+ch+'\'');
         return new Token(T_CHAR_LIT, "\'"+ch+'\'');
     }
 
-    public static Token makeString(String str) throws Exception {
+    public static Token makeChar(String ch, ErrorHandler handler) {
+        if(!isValidChar(ch)) {
+            handler.handle(null, 0, "Invalid character format: \'"+ch+'\'');
+            return null;
+        }
+        return new Token(T_CHAR_LIT, "\'"+ch+'\'');
+    }
+
+    public static Token makeString(String str) throws IllegalArgumentException {
         if(!isValidString(str))
-            throw new Exception("Invalid string format: \""+str+'\"');
+            throw new IllegalArgumentException("Invalid string format: \""+str+'\"');
+        return new Token(T_STRING_LIT, "\""+str+'\"');
+    }
+
+    public static Token makeString(String str, ErrorHandler handler) {
+        if(!isValidString(str)) {
+            handler.handle(null, 0, "Invalid string format: \""+str+'\"');
+            return null;
+        }
         return new Token(T_STRING_LIT, "\""+str+'\"');
     }
 

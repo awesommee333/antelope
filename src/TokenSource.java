@@ -51,7 +51,7 @@ public interface TokenSource {
         }
     }
 
-    public static class Empty implements TokenSource {
+    public static final class Empty implements TokenSource {
         public static final Empty Instance = new Empty();
         public String getName() { return "<NONEXISTENT_FILE>"; }
         public Token nextToken() { return Token.EOF; }
