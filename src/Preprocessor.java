@@ -43,7 +43,7 @@ public final class Preprocessor implements TokenSource {
         if(files.length < 2) {
             File f = getFile(files[0]);
             if(f == null) {
-                handler.handle(null, 0, "File not found: "+files[0]);
+                handler.error(null, 0, "File not found: "+files[0]);
                 source = TokenSource.Empty.Instance;
                 startingPath = null;
             }
@@ -94,11 +94,11 @@ public final class Preprocessor implements TokenSource {
     }
 
     private void error(String message, int line) {
-        shared.handler.handle(getName(), line, message);
+        shared.handler.error(getName(), line, message);
     }
 
     private Token clearLine(String errorMessage, int line) {
-        shared.handler.handle(getName(), line, errorMessage);
+        shared.handler.error(getName(), line, errorMessage);
         line = getLine(); Token t;
         do { t = source.nextToken(); }
         while(line == getLine() && !t.isNewLine() && !t.isEOF());

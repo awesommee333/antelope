@@ -1,37 +1,42 @@
 package antelope;
 
-public final class SyntaxTreeParser implements TokenSource {
+public final class SyntaxTreeParser implements TokenSource, ErrorHandler {
     private final ErrorHandler handler;
     private final TokenSource source;
     private final Namespace globalNS;
 
-    private SyntaxTreeParser(TokenSource source, ErrorHandler handler) {
+    public SyntaxTreeParser(TokenSource source, ErrorHandler handler) {
         globalNS = new Namespace(null, TParam.ZERO, null);
         this.handler = handler;
         this.source = source;
     }
 
-    private SyntaxTreeParser(SyntaxTreeParser other) {
-        globalNS = other.globalNS;
-        handler = other.handler;
-        source = other.source;
-    }
-
     public int getLine() { return source.getLine(); }
     public String getName() { return source.getName(); }
+
+    public void error(String src, int line, String msg) {
+        handler.error(src, line, msg);
+    }
+
+    public void error(String message, int line) {
+        handler.error(source.getName(), line, message);
+    }
+
+    public void error(String message) {
+        handler.error(source.getName(), source.getLine(), message);
+    }
 
     public Token nextToken() {
         Token t = source.nextToken();
         while(t == Token.NEW_FILE) {
-            globalNS.parse(new SyntaxTreeParser(this), handler);
+            globalNS.parse(this);
             t = source.nextToken();
         }
         return t;
     }
 
-    public static Namespace parse(TokenSource source, ErrorHandler handler) {
-        SyntaxTreeParser parser = new SyntaxTreeParser(source, handler);
-        parser.globalNS.parse(parser, handler);
-        return parser.globalNS;
+    public Namespace parse() {
+        globalNS.parse(this);
+        return globalNS;
     }
 }

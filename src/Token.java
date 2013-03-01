@@ -6,7 +6,6 @@ public final class Token implements Comparable<Token> {
     private final byte type;   // Type of token
 
     // Private Constructors; Use static methods instead
-    private Token() { throw new Error("Do not use this constructor!"); }
     private Token(byte t, String v) { this(t,v,0); }
     private Token(byte t, String v, int n) {
         type = t; value = v.intern(); number = n;
@@ -126,6 +125,7 @@ public final class Token implements Comparable<Token> {
     public static final Token STRUCT    = new Token(T_KEYWORD, "struct"  );
     public static final Token SWITCH    = new Token(T_KEYWORD, "switch"  );
     public static final Token UNTIL     = new Token(T_KEYWORD, "until"   );
+    public static final Token USING     = new Token(T_KEYWORD, "using"   );
     public static final Token VOLITALE  = new Token(T_KEYWORD, "volitale");
     public static final Token WHILE     = new Token(T_KEYWORD, "while"   );
     public static final Token YIELD     = new Token(T_KEYWORD, "yield"   );
@@ -216,7 +216,7 @@ public final class Token implements Comparable<Token> {
     public static Token makeComment(String comment) {
         return new Token(T_COMMENT, comment);
     }
-    public static Token makeChar(char ch) throws Exception {
+    public static Token makeChar(char ch) {
         return makeChar(Character.toString(ch));
     }
     public static Token makeBinNum(int num) {
@@ -229,65 +229,39 @@ public final class Token implements Comparable<Token> {
         return new Token(T_DEC_NUMBER, Integer.toString(num), num);
     }
 
-    public static Token makeIdent(String ident) throws IllegalArgumentException {
-        for(int i = 0; i < ident.length(); i++) {
-            if(!isIdentChar(ident.charAt(i)))
-                throw new IllegalArgumentException("Invalid identifier: "+ident);
-        } return getIdentToken(ident);
-    }
-
-    public static Token makeIdent(String ident, ErrorHandler handler) {
+    public static Token makeIdent(String ident) {
         for(int i = 0; i < ident.length(); i++) {
             if(!isIdentChar(ident.charAt(i))) {
-                handler.handle(null, 0, "Invalid identifier: "+ident);
-                return null;
+                return new Token(T_ERROR, "Invalid identifier: "+ident);
             }
-        } return getIdentToken(ident);
-    }
-
-    public static Token makeNumber(String num) throws NumberFormatException {
-        if(num.length() > 1 && num.charAt(0) == '0') {
-            char ch = num.charAt(1);
-            if(ch == 'x' || ch == 'h') { return new Token(T_HEX_NUMBER, num, Integer.parseInt(num.substring(2), 16)); }
-            if(ch == 'b') { return new Token(T_BIN_NUMBER, num, Integer.parseInt(num.substring(2), 2)); }
-            if(ch == 'd') { return new Token(T_DEC_NUMBER, num, Integer.parseInt(num.substring(2))); }
         }
-        return new Token(T_DEC_NUMBER, num, Integer.parseInt(num));
+        return getIdentToken(ident);
     }
 
-    public static Token makeNumber(String num, ErrorHandler handler) {
-        try { return makeNumber(num); }
+    public static Token makeNumber(String num) {
+        try {
+            if(num.length() > 1 && num.charAt(0) == '0') {
+                char ch = num.charAt(1);
+                if(ch == 'x' || ch == 'h') { return new Token(T_HEX_NUMBER, num, Integer.parseInt(num.substring(2), 16)); }
+                if(ch == 'b') { return new Token(T_BIN_NUMBER, num, Integer.parseInt(num.substring(2), 2)); }
+                if(ch == 'd') { return new Token(T_DEC_NUMBER, num, Integer.parseInt(num.substring(2))); }
+            }
+            return new Token(T_DEC_NUMBER, num, Integer.parseInt(num));
+        }
         catch(NumberFormatException nfe) {
-            handler.handle(null, 0, nfe.getMessage());
-            return null;
+            return new Token(T_ERROR, nfe.getMessage());
         }
     }
 
-    public static Token makeChar(String ch) throws IllegalArgumentException {
+    public static Token makeChar(String ch) {
         if(!isValidChar(ch))
-            throw new IllegalArgumentException("Invalid character format: \'"+ch+'\'');
+            return new Token(T_ERROR, "Invalid character format: \'"+ch+'\'');
         return new Token(T_CHAR_LIT, "\'"+ch+'\'');
     }
 
-    public static Token makeChar(String ch, ErrorHandler handler) {
-        if(!isValidChar(ch)) {
-            handler.handle(null, 0, "Invalid character format: \'"+ch+'\'');
-            return null;
-        }
-        return new Token(T_CHAR_LIT, "\'"+ch+'\'');
-    }
-
-    public static Token makeString(String str) throws IllegalArgumentException {
+    public static Token makeString(String str) {
         if(!isValidString(str))
-            throw new IllegalArgumentException("Invalid string format: \""+str+'\"');
-        return new Token(T_STRING_LIT, "\""+str+'\"');
-    }
-
-    public static Token makeString(String str, ErrorHandler handler) {
-        if(!isValidString(str)) {
-            handler.handle(null, 0, "Invalid string format: \""+str+'\"');
-            return null;
-        }
+            return new Token(T_ERROR, "Invalid string format: \""+str+'\"');
         return new Token(T_STRING_LIT, "\""+str+'\"');
     }
 
@@ -363,8 +337,7 @@ public final class Token implements Comparable<Token> {
                 if(ch == start) {
                     String value = source.substring(begin+1, idx);
                     source.delete(0, idx+1);
-                    try { return ((start == '\"')? makeString(value) : makeChar(value)); }
-                    catch(Exception e) { return makeError(e.getMessage()); }
+                    return (start == '\"' ? makeString(value) : makeChar(value));
                 }
             }
             String value = source.substring(begin, idx-1);

@@ -5,13 +5,13 @@ public final class Cofunc extends Member {
     public final Struct struct;
 
     public Cofunc(Func func) {
-        super(func.context, func.name);
-        struct = new Struct(context, name, TParam.ZERO);
+        super(func.context, func.line, func.name);
+        struct = new Struct(context, line, name, TParam.ZERO);
         this.func = func;
     }
 
     public Cofunc(Func func, Struct struct) {
-        super(func.context, func.name);
+        super(func.context, func.line, func.name);
         this.struct = struct;
         this.func = func;
     }

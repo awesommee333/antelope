@@ -1,5 +1,5 @@
 package antelope;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public final class Namespace {
@@ -26,26 +26,51 @@ public final class Namespace {
         this.children = children;
     }
 
-    public Global add(Global global) {
-        if(!(global instanceof Func))
-            return contents.put(global.name, global);
-        Global group = contents.get(global.name);
-        if(!(group instanceof FuncGroup))
-            return contents.put(global.name, new FuncGroup((Func)global));
-        ((FuncGroup)group).add((Func)global);
+    // Returns null if the add succeeded, otherwise returns
+    // the Global or Namespace that the argument conflicts with
+    public Object add(Global global) {
+        Object o = get(global.name);
+        if(o != null) {
+            if(!(o instanceof FuncGroup))
+                return o;
+            FuncGroup fg = (FuncGroup)o;
+            if(!(global instanceof Func))
+                return fg.funcs.getFirst();
+            fg.add((Func)global);
+            return null;
+        }
+        contents.put(global.name, global);
         return null;
     }
 
-    public Namespace add(Namespace namespace) {
-        return children.put(namespace.name, namespace);
+    // Returns null if the add succeeded, otherwise returns
+    // the Global or Namespace that the argument conflicts with
+    public Object add(Namespace namespace) {
+        Object o = get(namespace.name);
+        if(o != null)
+            return (o instanceof FuncGroup ? ((FuncGroup)o).funcs.getFirst() : o);
+        children.put(namespace.name, namespace);
+        return namespace;
     }
+
+    public Global getGlobal(Token name) { return contents.get(name); }
+    public Namespace getNamespace(Token name) { return children.get(name); }
 
     public Object get(Token name) {
         Object o = contents.get(name);
         return (o != null ? o : children.get(name));
     }
 
-    public void parse(TokenSource source, ErrorHandler handler) {
-        // INSERT CODE TO PARSE CODE FROM SOURCE
+    public void parse(SyntaxTreeParser parser) {
+        ArrayList<Using> usings = new ArrayList<Using>();
+        Token t = parser.nextToken();
+        Namespace ns = null;
+
+        while(t == Token.NAMESPACE || t == Token.USING) {
+            if(t == Token.NAMESPACE) {
+                // Parse namespace values; if ns not null, error; else ns = new.
+            }
+        }
+        // INSERT CODE TO PARSE CONTENTS
     }
 }

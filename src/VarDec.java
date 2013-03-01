@@ -15,14 +15,14 @@ public final class VarDec extends Command {
         this.vars = vars;
     }
 
-    public Variable add(Context context, Token name) {
-        Variable var = new Variable(context, name, type);
+    public Variable add(Context context, int line, Token name) {
+        Variable var = new Variable(context, line, name, type);
         vars.add(var);
         return var;
     }
 
-    public Variable add(Context context, Token name, Expression alias, Expression init) {
-        Variable var = new Variable(context, name, type, alias, init);
+    public Variable add(Context context, int line, Token name, Expression alias, Expression init) {
+        Variable var = new Variable(context, line, name, type, alias, init);
         vars.add(var);
         return var;
     }

@@ -29,11 +29,11 @@ public interface TokenSource {
                 src = new StringBuilder(jta.getText());
             }
             catch(FileNotFoundException fnfe) {
-                handler.handle(null, 0, "File not found: "+name);
+                handler.error(null, 0, "File not found: "+name);
                 src = new StringBuilder();
             }
             catch(IOException ioe) {
-                handler.handle(null, 0, "Unable to read from "+name);
+                handler.error(null, 0, "Unable to read from "+name);
                 src = new StringBuilder();
             }
             source = src;
@@ -43,7 +43,7 @@ public interface TokenSource {
             Token t;
             while(true) {
                 t = Token.nextToken(source);
-                if(t.isError()) { handler.handle(name, line, t.value); }
+                if(t.isError()) { handler.error(name, line, t.value); }
                 else if(t.isNewLine()) { line++; }
                 else if(!t.isComment()) { break; }
             }

@@ -6,15 +6,15 @@ public final class Variable extends Member {
     public final Expression alias;
     public boolean interpret = false;
 
-    public Variable(Context context, Token name, Type type) {
-        super(context, name);
+    public Variable(Context context, int line, Token name, Type type) {
+        super(context, line, name);
         this.type = type;
         alias = null;
         init = null;
     }
 
-    public Variable(Context context, Token name, Type type, Expression alias, Expression init) {
-        super(context, name);
+    public Variable(Context context, int line, Token name, Type type, Expression alias, Expression init) {
+        super(context, line, name);
         this.type = type;
         this.alias = alias;
         this.init = init;
