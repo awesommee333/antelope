@@ -210,24 +210,23 @@ public final class Token implements Comparable<Token> {
 
     // Static Token making methods
 
-    public static Token makeError(String message) {
-        return new Token(T_ERROR, message);
-    }
-    public static Token makeComment(String comment) {
-        return new Token(T_COMMENT, comment);
-    }
-    public static Token makeChar(char ch) {
-        return makeChar(Character.toString(ch));
-    }
-    public static Token makeBinNum(int num) {
-        return new Token(T_BIN_NUMBER, "0b"+Integer.toString(num,2), num);
-    }
-    public static Token makeHexNum(int num) {
-        return new Token(T_HEX_NUMBER, "0x"+Integer.toString(num,16), num);
-    }
-    public static Token makeNumber(int num) {
-        return new Token(T_DEC_NUMBER, Integer.toString(num), num);
-    }
+    public static Token makeError(String message)
+        { return new Token(T_ERROR, message); }
+
+    public static Token makeComment(String comment)
+        { return new Token(T_COMMENT, comment); }
+
+    public static Token makeChar(char ch)
+        { return makeChar(Character.toString(ch)); }
+
+    public static Token makeBinNum(int num)
+        { return new Token(T_BIN_NUMBER, "0b"+Integer.toString(num,2), num); }
+
+    public static Token makeHexNum(int num)
+        { return new Token(T_HEX_NUMBER, "0x"+Integer.toString(num,16), num); }
+
+    public static Token makeNumber(int num)
+        { return new Token(T_DEC_NUMBER, Integer.toString(num), num); }
 
     public static Token makeIdent(String ident) {
         for(int i = 0; i < ident.length(); i++) {

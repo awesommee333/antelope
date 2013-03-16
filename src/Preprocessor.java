@@ -74,8 +74,12 @@ public final class Preprocessor implements TokenSource {
     public void define(Token def) { shared.defined.add(def); }
     public int getLine() { return (include != null)? include.getLine() : source.getLine(); }
     public String getName() { return (include != null)? include.getName() : source.getName(); }
-    public Token[] getAllocations() { return shared.allocations.toArray(new Token[shared.allocations.size()]); }
-    public Token[] getAssemblies() { return shared.assemblies.toArray(new Token[shared.assemblies.size()]); }
+
+    public Token[] getAllocations()
+        { return shared.allocations.toArray(new Token[shared.allocations.size()]); }
+
+    public Token[] getAssemblies()
+        { return shared.assemblies.toArray(new Token[shared.assemblies.size()]); }
 
     public File getFile(String file) {
         File f = new File(startingPath, file);
