@@ -1,4 +1,6 @@
 package antelope;
+import antelope.tree.TParam;
+import antelope.tree.Namespace;
 import java.util.LinkedList;
 
 public final class SyntaxTreeParser implements TokenSource, ErrorHandler {
@@ -29,7 +31,7 @@ public final class SyntaxTreeParser implements TokenSource, ErrorHandler {
 
     public Token nextToken() {
         while(true) {
-            Token t = (queue.size() > 0 ? stack.pop() : source.nextToken());
+            Token t = (stack.size() > 0 ? stack.pop() : source.nextToken());
             if(t != Token.NEW_FILE) { return t; }
             globalNS.parse(this);
         }
