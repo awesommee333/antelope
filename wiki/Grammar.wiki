@@ -189,8 +189,6 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
 ----
 <br>
 
-`(This section is in the process of being updated from an older version)`
-
 This walkthrough demonstrates how the grammar rules are followed in a [http://en.wikipedia.org/wiki/Recursive_descent_parser recursive decent pattern] to parse a snippet of code into a syntax tree.
 
 ==== Conventions Used: ====
