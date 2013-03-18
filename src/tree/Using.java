@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public final class Using extends SyntaxTreeItem {
     public final Entity entity;

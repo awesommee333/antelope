@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public final class If extends Conditional {
     public Block elseCode;

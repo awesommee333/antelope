@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public class Operation extends Expression {
     public final Token kind;

@@ -1,4 +1,5 @@
 package antelope.tree;
+import antelope.*;
 
 public final class Type extends SyntaxTreeItem {
     public final BaseType base;

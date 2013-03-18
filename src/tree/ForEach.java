@@ -1,4 +1,5 @@
 package antelope.tree;
+import antelope.*;
 
 public final class ForEach extends Construct {
     public final Variable[] vars;

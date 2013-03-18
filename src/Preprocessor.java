@@ -134,7 +134,7 @@ public final class Preprocessor implements TokenSource {
                         t = source.nextToken();
                         if(line != getLine() || t.isEOF())
                             error(message, line);
-                        else if(!t.isIdentifier())
+                        else if(!t.isIdent())
                             t = clearLine("Identifier expected following #"+kind+". Found: "+t, line);
                         else {
                             if(kind == Token.DEFINE) { define(t); }
@@ -377,7 +377,7 @@ public final class Preprocessor implements TokenSource {
             state[0] ^= invert;
             return source.nextToken();
         }
-        if(!t.isIdentifier())
+        if(!t.isIdent())
             return clearLine("Idendifier expected. Found: "+t, line);
         state[0] = (shared.defined.contains(t) ^ invert);
         return source.nextToken();

@@ -1,6 +1,5 @@
 package antelope.tree;
-import antelope.SyntaxTreeParser;
-import antelope.Token;
+import antelope.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 

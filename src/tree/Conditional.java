@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public abstract class Conditional extends Construct {
     public final Token kind;

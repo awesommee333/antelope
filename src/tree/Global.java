@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public abstract class Global extends SyntaxTreeItem {
     public final Context context;

@@ -1,4 +1,5 @@
 package antelope.tree;
+import antelope.*;
 
 public final class Cofunc extends Member {
     public final Func func;

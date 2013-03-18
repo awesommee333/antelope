@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public final class TParam extends SyntaxTreeItem {
     public final Token name;

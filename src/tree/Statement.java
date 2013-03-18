@@ -1,6 +1,5 @@
 package antelope.tree;
-
-import antelope.Token;
+import antelope.*;
 
 public abstract class Statement extends SyntaxTreeItem {
     public Token label = null;

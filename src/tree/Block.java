@@ -1,4 +1,5 @@
 package antelope.tree;
+import antelope.*;
 import java.util.ArrayList;
 
 public final class Block extends SyntaxTreeItem {

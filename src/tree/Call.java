@@ -1,4 +1,5 @@
 package antelope.tree;
+import antelope.*;
 
 public final class Call extends Expression {
     public boolean isNew;

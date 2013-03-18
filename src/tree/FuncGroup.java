@@ -1,5 +1,5 @@
 package antelope.tree;
-import antelope.Token;
+import antelope.*;
 import java.util.LinkedList;
 
 public final class FuncGroup extends Member {

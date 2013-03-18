@@ -1,4 +1,5 @@
 package antelope.tree;
+import antelope.*;
 
 public final class Lambda extends Expression {
     public final FuncPtr signature;
