@@ -301,5 +301,5 @@ Operators are evaluated (bound) in order from top (`1`) to bottom (`17`). Lambda
  # <font color="#BBBBBB">`(L»R)`</font>` ||`
  # <font color="#BBBBBB">`(L»R)`</font>` `<font color="#BBBBBB">`TEST`</font>` ? `<font color="#BBBBBB">`TRUE`</font>` : `<font color="#BBBBBB">`FALSE`</font>
  # <font color="#BBBBBB">`(L»R)`</font>` `<font color="#BBBBBB">`NONZERO`</font>` ?? `<font color="#BBBBBB">`OTHERWISE`</font>
- # <font color="#BBBBBB">`(R»L)`</font>` = *= /= %= += -= <<= >>= <<<= >>>= &= ^= |= =>`<font color="#BBBBBB">`_`</font>
+ # <font color="#BBBBBB">`(R»L)`</font>` = := *= /= %= += -= <<= >>= &= ^= |= =>`<font color="#BBBBBB">`_`</font>
  # <font color="#BBBBBB">`(L»R)`</font>` ,`
