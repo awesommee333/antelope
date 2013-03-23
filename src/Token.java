@@ -83,9 +83,9 @@ public final class Token implements Comparable<Token> {
     public static final Token XOR_EQ    = new Token(T_ASSIGN_OP, "^=" );
     public static final Token AMP       = new Token(T_BIT_AND_OP, "&" );
     public static final Token AND       = new Token(T_AND_OP,       "&&");
-    public static final Token ARROW     = new Token(T_CAST_OP,      "->");
     public static final Token AT        = new Token(T_OPERATOR,     "@" );
     public static final Token BAR       = new Token(T_BIT_OR_OP,    "|" );
+    public static final Token CAST      = new Token(T_CAST_OP,      "->");
     public static final Token COLON     = new Token(T_TERNARY_OP,   ":" );
     public static final Token COMMA     = new Token(T_COMMA_OP,     "," );
     public static final Token COMPL     = new Token(T_SECONDARY_OP, "~" );
