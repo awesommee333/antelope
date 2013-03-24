@@ -142,7 +142,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * `Type { `*`BaseType`*` base; `*`Expression`*`[] dims; `*`Bool`*` const, `*`Bool`*` volatile, `*`Bool`*` ref; }`
  * `<BaseType> { }`
    * `FuncPtr { `*`Entity`*` receiver; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
-   * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` next; }`
+   * `EntityType { `*`Entity`*` entity; }`
  * `Using { `*`Token`*` alias; `*`Entity`*` entity; }`
  * `Context { `*`Namespace`*` namespace; `*`Using`*`[] usings; }`
  * `TParam { `*`Token`*` name; `*`BaseType`*`[] constraints; }`
@@ -177,10 +177,10 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * `Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`
      * `Ternary { `*`Expression`*` condition; }`
    * `Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`
+   * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` next; }`
    * `Call { `*`Bool`*` isNew; `*`Expression`*`[] args; `*`Expression`*`[] inits; }`
-     *  <font color="green">`// function/constructor call`</font>
+     *  <font color="green">`// function call or constructor call`</font>
    * `Cast { `*`Expression`*` left; `*`Type`*`[] Types; }`
-   * `EntityValue { `*`Entity`*` value; }`
    * `Value { `*`Token`*` value; }`
 
 <br>
