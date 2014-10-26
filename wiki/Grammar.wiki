@@ -25,19 +25,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 
 ==== Grammar Rules: ====
 ||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes</font> ||
-||||||<font face="arial black"> - - Preprocessor Rules - - </font><font color="#888888">_These rules are processed (and removed) before any other rules are applied._</font>||
 ||`COMMENT`||`//` _`NonLineBreak`_<font face="arial black" color="#AAAAFF">`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">|</font> `/*` _`NonStarSlash`_<font face="arial black" color="#AAAAFF">`*`</font> `*/`||Comments may be intermixed (are removed / ignored when found).||
-||`P_INC`||`#include` `STRING`||Include source code from another file or url.||
-||`P_DEF`||`#define` `IDENT`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||Define an identifier (as a "flag" for `P_IF`).||
-||`P_UNDEF`||`#undef` `IDENT`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font>||Un-Define an identifier (as a "flag" for `P_IF`).||
-||`P_IF`||`#if` _`P_OR`_ _`CODE`_ <font face="arial black" color="#AAAAFF">(</font> `#elif` _`P_OR`_ _`CODE`_ <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">[</font> `#else` _`SRC`_ <font face="arial black" color="#AAAAFF">]</font> `#endif`||Designate code to be used on conditions based on `#define`d values.||
-||> _`P_OR`_||_`P_AND`_ <font face="arial black" color="#AAAAFF">(</font> `|``|` _`P_AND`_ <font face="arial black" color="#AAAAFF">)`*`</font>||Conditional-"OR" for `P_IF`.||
-||> _`P_AND`_||_`P_VAL`_ <font face="arial black" color="#AAAAFF">(</font> `&``&` _`P_VAL`_ <font face="arial black" color="#AAAAFF">)`*`</font>||Conditional-"AND" for `P_IF`.||
-||> _`P_VAL`_||<font face="arial black" color="#AAAAFF">[</font> `!` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `IDENT` <font face="arial black" color="#AAAAFF">|</font> `(` _`P_OR`_ `)` <font face="arial black" color="#AAAAFF">)</font>||Preprocessor value for `P_IF`.||
-||> _`CODE`_||_Any amount of source code (including other directives)_||Source code.||
-||`P_ERR`||`#error` `STRING`||Generate a compile-time error message.||
-||`P_ASM`||`#assembly` `STRING`||Insert assembly code at the head of the program.||
-||`P_ALLOC`||`#allocate` `STRING` <font face="arial black" color="#AAAAFF">[</font> `+` <font face="arial black" color="#AAAAFF">|</font> `-` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">[</font> `NUM` <font face="arial black" color="#AAAAFF">]</font>||Designate a "Safe-RAM" Allocation (used for static initializations).||
 ||||||<font face="arial black"> - - Package-Level Rules - -||
 ||`SOURCE`||<font face="arial black" color="#AAAAFF">[</font> `PACKAGE` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font>`IMPORT`<font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">(</font>_`P_DEC`_<font face="arial black" color="#AAAAFF">)`*`</font>||An entire source of code (a source file).||
 ||`PACKAGE`||`package` <font face="arial black" color="#AAAAFF">`(`</font> `IDENT` `.` <font face="arial black" color="#AAAAFF">)`*`</font> `IDENT` `;`||Package declaration.||
