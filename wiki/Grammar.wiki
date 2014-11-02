@@ -165,7 +165,8 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
      * <font color="#0000AA">`VarDec { `*`Type`*` type; `*`Variable`*`[] vars; }`</font>
      * <font color="#0000AA">`Instruction { `*`Token`*` kind; `*`Expression`*` value; }`</font>
        * <font color="green">`// kinds: branch, delete, operator (=,+=,++,etc.)`</font>
-     * `Assembly { `*`Expression`*`[] values; }`
+     * <font color="#0000AA">`Assembly { `*`Token`*`[][] tokens; `*`Expression`*`[] inlineValues; `*`Bool`*` brackets; }`</font>
+       * <font color="green">`// Tokens grouped per instruction. Each [n] maps to inlineValues[n]`</font>
  * <font color="#0000AA">`<Expression> { `*`Bool`*` ipret; }`</font>
    * <font color="#0000AA">`Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`</font>
      * <font color="#0000AA">`Ternary { `*`Expression`*` condition; }`</font>
