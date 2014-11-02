@@ -125,8 +125,12 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
 
 ==== The Classes: ====
 
- * `Type { `*`BaseType`*` base; `*`ArrayDims`*`[] dims; `*`Bool`*` const; `*`Bool`*` volatile; `*`Bool?`*` refOrVal; `*`Bool?`*` nullable; }`
- * `ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const; `*`Bool`*` volatile; `*`Bool?`*` nullable; }`
+<font color="#AA0000">*` ---------------------------------------------- `</font>
+<br><font color="#AA0000">` --- EDIT IN PROGRESS. `</font><font color="#0000AA">`BLUE ITEMS`</font><font color="#AA0000">` ARE "DONE" --- `</font>
+<br><font color="#AA0000">` ---------------------------------------------- `*</font>
+
+ * <font color="#0000AA">`Type { `*`BaseType`*` base; `*`ArrayDims`*`[] dims; `*`Bool`*` const; `*`Bool`*` volatile; `*`Bool?`*` refOrVal; `*`Bool?`*` nullable; }`</font>
+ * <font color="#0000AA">`ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const; `*`Bool`*` volatile; `*`Bool?`*` nullable; }`</font>
  * `<BaseType> { }`
    * `FuncPtr { `*`Entity`*` receiver; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
    * `EntityType { `*`Entity`*` entity; }`
