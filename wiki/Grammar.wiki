@@ -27,7 +27,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||<font face="arial black">Rule</font>||<font face="arial black">Grammar</font>||<font face="arial black">Notes</font> ||
 ||`COMMENT`||`//` _`NonLineBreak`_<font face="arial black" color="#AAAAFF">`*`</font> _`LineBreak`_ <font face="arial black" color="#AAAAFF">|</font> `/*` _`NonStarSlash`_<font face="arial black" color="#AAAAFF">`*`</font> `*/`||Comments may be intermixed (are removed / ignored when found).||
 ||||||<font face="arial black"> - - Package-Level Rules - -||
-||`SOURCE`||<font face="arial black" color="#AAAAFF">[</font> `PACKAGE` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font>`IMPORT`<font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">(</font>_`P_DEC`_<font face="arial black" color="#AAAAFF">)`*`</font>||An entire source of code (a source file).||
+||`SOURCE`||<font face="arial black" color="#AAAAFF">[</font> `PACKAGE` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `IMPORT` <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">(</font> _`P_DEC`_ <font face="arial black" color="#AAAAFF">)`*`</font>||An entire source of code (a source file).||
 ||`PACKAGE`||`package` <font face="arial black" color="#AAAAFF">`(`</font> `IDENT` `.` <font face="arial black" color="#AAAAFF">)`*`</font> `IDENT` `;`||Package declaration.||
 ||`IMPORT`||`import` <font face="arial black" color="#AAAAFF">[</font> `IDENT` `=` <font face="arial black" color="#AAAAFF">]</font> `SCOPE` <font face="arial black" color="#AAAAFF">[</font> `.` `*` <font face="arial black" color="#AAAAFF">]</font> `;`||Package import declaration.||
 ||> _`P_DEC`_||`P_IF` <font face="arial black" color="#AAAAFF">|</font> `VARDEC` `;` <font face="arial black" color="#AAAAFF">|</font> `INIT` <font face="arial black" color="#AAAAFF">|</font> _`ADT`_ <font face="arial black" color="#AAAAFF">|</font> `FUNC`||Package-Level Declarations.||
@@ -98,7 +98,7 @@ _For a less technical description of Antelope, see the [http://code.google.com/p
 ||`INSTANCE`||`new` `TYPE` <font face="arial black" color="#AAAAFF">|</font> <font face="arial black" color="#AAAAFF">[</font> `new` <font face="arial black" color="#AAAAFF">]</font> `TYPE` <font face="arial black" color="#AAAAFF">(</font> _`V_INIT`_ <font face="arial black" color="#AAAAFF">|</font> `{` <font face="arial black" color="#AAAAFF">[</font>`EXPR`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">]</font> `}` <font face="arial black" color="#AAAAFF">)</font><br><font face="arial black" color="#AAAAFF">|</font> `{` <font face="arial black" color="#AAAAFF">[</font> `EXPR`<font face="arial black" color="#AAAAFF">,</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">]</font> `}` <font face="arial black" color="#AAAAFF">|</font> `{` <font face="arial black" color="#AAAAFF">[</font> <font face="arial black" color="#AAAAFF">(</font> `IDENT` <font face="arial black" color="#AAAAFF">(</font> `=` `EXPR` <font face="arial black" color="#AAAAFF">|</font> _`V_INIT`_ <font face="arial black" color="#AAAAFF">)</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> <font face="arial black" color="#AAAAFF">]</font> `}`||Literal Instance of a class, trait, or array.||
 ||`ENTITY`||`SCOPE` <font face="arial black" color="#AAAAFF">[</font> `.` `OP` <font face="arial black" color="#AAAAFF">[</font> `STP` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">]</font>||Any Entity (variable, function, class, etc.).||
 ||`SCOPE`||<font face="arial black" color="#AAAAFF">(</font> `IDENT` <font face="arial black" color="#AAAAFF">[</font> `STP` <font face="arial black" color="#AAAAFF">]</font> `.`<font face="arial black" color="#AAAAFF">)`*`</font> `IDENT` <font face="arial black" color="#AAAAFF">[</font> `STP` <font face="arial black" color="#AAAAFF">]</font>||Scope-based Entity (class, trait, func, package, etc.).||
-||`STP`||`<` <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">[</font> `in` <font face="arial black" color="#AAAAFF">|</font> `out` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `IDENT` <font face="arial black" color="#AAAAFF">|</font> `?` <font face="arial black" color="#AAAAFF">)</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `>`||Supplied Type Parameters.||
+||`STP`||`<` <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">[</font> `in` <font face="arial black" color="#AAAAFF">|</font> `out` <font face="arial black" color="#AAAAFF">]</font> <font face="arial black" color="#AAAAFF">(</font> `TYPE` <font face="arial black" color="#AAAAFF">|</font> `?` <font face="arial black" color="#AAAAFF">)</font> <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `>`||Supplied Type Parameters.||
 ||`FTP`||`<` <font face="arial black" color="#AAAAFF">(</font> <font face="arial black" color="#AAAAFF">[</font> `ref` <font face="arial black" color="#AAAAFF">]</font> `IDENT` <font face="arial black" color="#AAAAFF">),</font><font face="arial black" color="#AAAAFF">,</font> `>`||Formal Type Parameters.||
 ||`IDENT`||_letter_ <font face="arial black" color="#AAAAFF">(</font> _letter_ <font face="arial black" color="#AAAAFF">|</font> _digit_ <font face="arial black" color="#AAAAFF">|</font> `_` <font face="arial black" color="#AAAAFF">)`*`</font> <font face="arial black" color="#AAAAFF">|</font> `_`<font face="arial black" color="#AAAAFF">+</font> <font face="arial black" color="#AAAAFF">(</font> _letter_ <font face="arial black" color="#AAAAFF">|</font> _digit_ <font face="arial black" color="#AAAAFF">)</font> <font face="arial black" color="#AAAAFF">(</font> _letter_ <font face="arial black" color="#AAAAFF">|</font> _digit_ <font face="arial black" color="#AAAAFF">|</font> `_` <font face="arial black" color="#AAAAFF">)`*`</font>||Identifier (a valid "name" of something, e.g. `x`, `foo2`, `_3D`).||
 ||`NUM`||_digit_<font face="arial black" color="#AAAAFF">+ |</font> `0x`<font face="arial black" color="#AAAAFF">(</font>_digit_<font face="arial black" color="#AAAAFF">|</font>_A-F_<font face="arial black" color="#AAAAFF">|</font>_a-f_<font face="arial black" color="#AAAAFF">)+ |</font> `0b`<font face="arial black" color="#AAAAFF">(</font>`0`<font face="arial black" color="#AAAAFF">|</font>`1`<font face="arial black" color="#AAAAFF">)+</font>||Decimal (`123`), Hexadecimal (`0x7B`), or Binary (`0b01111011`) Number.||
@@ -125,52 +125,56 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
 
 ==== The Classes: ====
 
-<font color="#AA0000">*` ---------------------------------------------- `</font>
-<br><font color="#AA0000">` --- EDIT IN PROGRESS. `</font><font color="#0000AA">`BLUE ITEMS`</font><font color="#AA0000">` ARE "DONE" --- `</font>
-<br><font color="#AA0000">` ---------------------------------------------- `*</font>
+<font color="#CC0000">*`========================================================================================`</font>
+<br><font color="#CC0000">`=== EDIT IN PROGRESS. `</font><font color="#0000AA">`BLUE ITEMS`</font><font color="#CC0000">` ARE "DONE". STILL NEED TO INCORPORATE ATTRIBUTES HERE ===`</font>
+<br><font color="#CC0000">`========================================================================================`*</font>
 
- * <font color="#0000AA">`Type { `*`BaseType`*` base; `*`ArrayDims`*`[] dims; `*`Bool`*` const; `*`Bool`*` volatile; `*`Bool?`*` refOrVal; `*`Bool?`*` nullable; }`</font>
- * <font color="#0000AA">`ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const; `*`Bool`*` volatile; `*`Bool?`*` nullable; }`</font>
- * `<BaseType> { }`
-   * `FuncPtr { `*`Entity`*` receiver; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
-   * `EntityType { `*`Entity`*` entity; }`
- * `Using { `*`Token`*` alias; `*`Entity`*` entity; }`
- * `Context { `*`Namespace`*` namespace; `*`Using`*`[] usings; }`
- * `TParam { `*`Token`*` name; `*`BaseType`*`[] constraints; }`
- * `Namespace { `*`TParam`*`[] params; `*`Namespace`*` parent; `*`Namespace`*`[] children; `*`Global`*`[] contents; }`
- * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
-   * `Init { `*`Block`*` code; }`
+ * <font color="#0000AA">`Type { `*`BaseType`*` base; `*`ArrayDims`*`[] dims; `*`Bool`*` const, volatile; `*`Token`*` passBy; `*`Bool?`*` nullable; }`</font>
+   * <font color="green">`// passBy options: ref, val, in, out, <null>`</font>
+ * <font color="#0000AA">`ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const, volatile; `*`Bool?`*` nullable; }`</font>
+ * <font color="#0000AA">`<BaseType> { }`</font>
+   * `FuncPtr { `*`Entity`*` thisArg; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
+   * <font color="#0000AA">`EntityType { `*`Entity`*` entity; }`</font>
+ * <font color="#0000AA">`Import { `*`Token`*` alias; `*`Entity`*` entity; }`</font>
+ * <font color="#0000AA">`Context { `*`Package`*` package; `*`Import`*`[] imports; }`</font>
+ * <font color="#0000AA">`TParam { `*`Token`*` name; `*`Bool`*` ref; }`</font>
+ * <font color="#0000AA">`Package { `*`Package`*` parent; `*`Package`*`[] children; `*`Global`*`[] contents; }`</font>
+ * <font color="#0000AA">`PackageBlock { `*`Bool`*` brackets; `*`Global`*`[] contents; }`</font>
+ * <font color="#0000AA">`<Global> { `*`Context`*` context; `*`Token`*` name; }`</font>
+   * <font color="#0000AA">`PackageIf { `*`Expression`*` condition; `*`PackageBlock`*` contents, elseContents; }`</font>
+   * <font color="#0000AA">`Init { `*`Block`*` code; }`</font>
    * `Enum { `*`Token`*`[] values; }`
-   * `Class { `*`TParam`*`[] params; `*`Member`*`[] members; }`
-   * `Trait { `*`TParam`*`[] params; `*`Member`*`[] members; `*`Entity`*`[] parents; }`
-   * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
-   * `<Member> { }`
-     * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` alias; `*`Expression`*` init; }`
-       *  <font color="green">`// Type can be CONST for constants`</font>
+   * <font color="#0000AA">`Class { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`</font>
+   * <font color="#0000AA">`Trait { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`</font>
+   * <font color="#0000AA">`TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`</font>
+   * <font color="#0000AA">`MemberBlock { `*`Bool`*` brackets; `*`Member`*`[] members; }`</font>
+   * <font color="#0000AA">`<Member> { }`</font>
+     * <font color="#0000AA">`MemberIf { `*`Expression`*` condition; `*`MemberBlock`*` members, elseMembers; }`</font>
+     * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` init; }`
      * `Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`
- * `Block { `*`Statement`*`[] code; `*`Bool`*` braces; }`
- * `<Statement> { `*`Token`*` label; } `<font color="green">`// label for goto`</font>
-   * `<Construct> { `*`Bool`*` ipret; `*`Block`*` code; }`
-     * `ForEach { `*`Variable`*`[] vars; `*`Bool`*` def; `*`Expression`*` start,end,inc; }`
-     * `Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`
+ * <font color="#0000AA">`Block { `*`Statement`*`[] code; `*`Bool`*` braces; }`</font>
+ * <font color="#0000AA">`Statement { `*`Token`*`[] labels; } `</font><font color="green">`// label(s) for break/continue/goto`</font>
+   * <font color="#0000AA">`<Construct> { `*`Bool`*` ipret; `*`Block`*` code; }`</font>
+     * `ForEach { `*`Variable`*`[] vars; `*`Bool`*` def; `*`Expression`*` start, end, inc; }`
+     * <font color="#0000AA">`Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`</font>
        *  <font color="green">`// kinds: if, switch, while, until, do, for`</font>
-       * `If { `*`Block`*` elseCode; }`
-       * `Do { `*`Token`*` logic; `*`int`*` condPos; }`
-       * `For { `*`Command`*` init; `*`Command`*` step; }`
-   * `<Command> { }`
-     * `VarDec { `*`Type`*` type; `*`Variable`*`[] vars; }`
-     * `Instruction { `*`Token`*` kind; `*`Expression`*` value; }`
-       *  <font color="green">`// kinds: branch, delete, =>while/until, operator (=,+=,++,etc.)`</font>
+       * <font color="#0000AA">`If { `*`Block`*` elseCode; }`</font>
+       * <font color="#0000AA">`Do { `*`Token`*` logic, gotoLabel; }`</font>
+       * <font color="#0000AA">`For { `*`Command`*` init, step; }`</font>
+   * <font color="#0000AA">`<Command> { }`</font>
+     * <font color="#0000AA">`VarDec { `*`Type`*` type; `*`Variable`*`[] vars; }`</font>
+     * <font color="#0000AA">`Instruction { `*`Token`*` kind; `*`Expression`*` value; }`</font>
+       * <font color="green">`// kinds: branch, delete, operator (=,+=,++,etc.)`</font>
      * `Assembly { `*`Expression`*`[] values; }`
- * `<Expression> { `*`Bool`*` ipret; }`
-   * `Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`
-     * `Ternary { `*`Expression`*` condition; }`
+ * <font color="#0000AA">`<Expression> { `*`Bool`*` ipret; }`</font>
+   * <font color="#0000AA">`Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`</font>
+     * <font color="#0000AA">`Ternary { `*`Expression`*` condition; }`</font>
    * `Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`
-   * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` next; }`
-   * `Call { `*`Bool`*` isNew; `*`Expression`*`[] args; `*`Expression`*`[] inits; }`
-     *  <font color="green">`// function call or constructor call`</font>
-   * `Cast { `*`Expression`*` left; `*`Type`*`[] Types; }`
-   * `Value { `*`Token`*` value; }`
+   * <font color="#0000AA">`Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` child; }`</font>
+   * <font color="#0000AA">`Call { `*`Bool`*` isNew; `*`Expression`*` left; `*`Expression`*`[] args, inits; }`</font>
+     *  <font color="green">`// function-/constructor-call. Inits stored as Operation{=,member,value}`</font>
+   * <font color="#0000AA">`Cast { `*`Expression`*` left; `*`Type`*`[] Types; }`</font>
+   * <font color="#0000AA">`Value { `*`Token`*` value; }`</font>
 
 <br>
 ----
