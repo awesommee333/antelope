@@ -133,7 +133,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * <font color="green">`// passBy options: ref, val, in, out, <null>`</font>
  * <font color="#0000AA">`ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const, volatile; `*`Bool?`*` nullable; }`</font>
  * <font color="#0000AA">`<BaseType> { }`</font>
-   * `FuncPtr { `*`Entity`*` thisArg; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
+   * <font color="#0000AA">`FuncPtr { `*`Entity`*` thisArg; `*`Variable`*`[] args; `*`Type`*`[] returns; }`</font>
    * <font color="#0000AA">`EntityType { `*`Entity`*` entity; }`</font>
  * <font color="#0000AA">`Import { `*`Token`*` alias; `*`Entity`*` entity; }`</font>
  * <font color="#0000AA">`Context { `*`Package`*` package; `*`Import`*`[] imports; }`</font>
@@ -143,19 +143,19 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * <font color="#0000AA">`<Global> { `*`Context`*` context; `*`Token`*` name; }`</font>
    * <font color="#0000AA">`PackageIf { `*`Expression`*` condition; `*`PackageBlock`*` contents, elseContents; }`</font>
    * <font color="#0000AA">`Init { `*`Block`*` code; }`</font>
-   * `Enum { `*`Token`*`[] values; }`
+   * <font color="#0000AA">`Enum { `*`Type`*`[] baseType; `*`Variable`*`[] values; }`</font>
    * <font color="#0000AA">`Class { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`</font>
    * <font color="#0000AA">`Trait { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`</font>
    * <font color="#0000AA">`TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`</font>
    * <font color="#0000AA">`MemberBlock { `*`Bool`*` brackets; `*`Member`*`[] members; }`</font>
    * <font color="#0000AA">`<Member> { }`</font>
      * <font color="#0000AA">`MemberIf { `*`Expression`*` condition; `*`MemberBlock`*` members, elseMembers; }`</font>
-     * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` init; }`
-     * `Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`
+     * <font color="#0000AA">`Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` init; }`</font>
+     * <font color="#0000AA">`Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`</font>
  * <font color="#0000AA">`Block { `*`Statement`*`[] code; `*`Bool`*` braces; }`</font>
  * <font color="#0000AA">`Statement { `*`Token`*`[] labels; } `</font><font color="green">`// label(s) for break/continue/goto`</font>
    * <font color="#0000AA">`<Construct> { `*`Bool`*` ipret; `*`Block`*` code; }`</font>
-     * `ForEach { `*`Variable`*`[] vars; `*`Bool`*` def; `*`Expression`*` start, end, inc; }`
+     * <font color="#0000AA">`ForEach { `*`Expression`*`[] vars; `*`Expression`*` start, end, inc; }`</font>
      * <font color="#0000AA">`Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`</font>
        *  <font color="green">`// kinds: if, switch, while, until, do, for`</font>
        * <font color="#0000AA">`If { `*`Block`*` elseCode; }`</font>
@@ -169,11 +169,12 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * <font color="#0000AA">`<Expression> { `*`Bool`*` ipret; }`</font>
    * <font color="#0000AA">`Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`</font>
      * <font color="#0000AA">`Ternary { `*`Expression`*` condition; }`</font>
-   * `Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`
+   * <font color="#0000AA">`Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`</font>
    * <font color="#0000AA">`Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` child; }`</font>
    * <font color="#0000AA">`Call { `*`Bool`*` isNew; `*`Expression`*` left; `*`Expression`*`[] args, inits; }`</font>
      *  <font color="green">`// function-/constructor-call. Inits stored as Operation{=,member,value}`</font>
    * <font color="#0000AA">`Cast { `*`Expression`*` left; `*`Type`*`[] Types; }`</font>
+   * <font color="#0000AA">`InlineVarDec { `*`Variable`*` variable; }`</font>
    * <font color="#0000AA">`Value { `*`Token`*` value; }`</font>
 
 <br>
