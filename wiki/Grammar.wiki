@@ -139,9 +139,10 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
  * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
    * `PackageIf { `*`Expression`*` condition; `*`PackageBlock`*` contents, elseContents; }`
    * `Init { `*`Block`*` code; }`
-   * `Enum { `*`Type`*`[] baseType; `*`Variable`*`[] values; }`
+   * `Enum { `*`Type`*` baseType; `*`Variable`*`[] values; }`
    * `Class { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
    * `Trait { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
+   * `Object { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
    * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
    * `MemberBlock { `*`Bool`*` brackets; `*`Member`*`[] members; }`
    * `<Member> { }`
