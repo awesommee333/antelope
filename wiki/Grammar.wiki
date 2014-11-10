@@ -129,20 +129,23 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * <font color="green">`// passBy options: ref, val, in, out, <null>`</font>
  * `ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const, volatile; `*`Bool?`*` nullable; }`
  * `<BaseType> { }`
-   * `FuncPtr { `*`Entity`*` thisArg; `*`Variable`*`[] args; `*`Type`*`[] returns; }`
+   * `FuncPtr { `*`Entity`*` thisArg; `*`Variable`*`[] args; `*`ReturnValue`*`[] returns; }`
    * `EntityType { `*`Entity`*` entity; }`
+ * `ReturnValue { `*`Type`*` type; `*`Attrib`*`[] attributes; }`
+ * `Attrib { `*`Entity`*` name; `*`Expression`*`[] args; }`
  * `Import { `*`Token`*` alias; `*`Entity`*` entity; }`
  * `Context { `*`Package`*` package; `*`Import`*`[] imports; }`
  * `TParam { `*`Token`*` name; `*`Bool`*` ref; }`
  * `Package { `*`Package`*` parent; `*`Package`*`[] children; `*`Global`*`[] contents; }`
  * `PackageBlock { `*`Bool`*` brackets; `*`Global`*`[] contents; }`
- * `<Global> { `*`Context`*` context; `*`Token`*` name; }`
+ * `<Global> { `*`Context`*` context; `*`Token`*` name; `*`Attrib`*`[] attributes; }`
    * `PackageIf { `*`Expression`*` condition; `*`PackageBlock`*` contents, elseContents; }`
    * `Init { `*`Block`*` code; }`
    * `Enum { `*`Type`*` baseType; `*`Variable`*`[] values; }`
    * `Class { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
    * `Trait { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
    * `Object { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
+   * `Attribute { `*`TParam`*`[] params; `*`Entity`*`[] parents; `*`Member`*`[] members; }`
    * `TypeDef { `*`TParam`*`[] params; `*`Type`*` type; `*`Bool`*` isNew; }`
    * `MemberBlock { `*`Bool`*` brackets; `*`Member`*`[] members; }`
    * `<Member> { }`
@@ -150,7 +153,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
      * `Variable { `*`Type`*` type; `*`Bool`*` ipret; `*`Expression`*` init; }`
      * `Func { `*`TParam`*`[] params; `*`FuncPtr`*` signature; `*`Block`*` code; `*`Bool`*` ipret; }`
  * `Block { `*`Statement`*`[] code; `*`Bool`*` braces; }`
- * `Statement { `*`Token`*`[] labels; } `<font color="green">`// label(s) for break/continue/goto`</font>
+ * `<Statement> { `*`Token`*`[] labels; } `<font color="green">`// label(s) for break/continue/goto`</font>
    * `<Construct> { `*`Bool`*` ipret; `*`Block`*` code; }`
      * `ForEach { `*`Expression`*`[] vars; `*`Expression`*` start, end, inc; }`
      * `Conditional { `*`Token`*` kind; `*`Expression`*` cond; }`
