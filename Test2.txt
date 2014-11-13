@@ -1,0 +1,5 @@
+This is Test2.txt..
+#define TEST2
+#include "Test.antler"
+#include "Test2.txt"
+This is still Test2.
