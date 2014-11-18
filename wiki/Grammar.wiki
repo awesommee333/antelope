@@ -122,12 +122,16 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
 
 ==== The Classes: ====
 
- * `Type { `*`BaseType`*` base; `*`ArrayDims`*`[] dims; `*`Bool`*` const, volatile; `*`Token`*` passBy; `*`Bool?`*` nullable; }`
+<font color="blue">`---------------------------------------------------------------------------`</font><br>
+<font color="blue">`--- Currently updating source code to match. Blue items are "complete" ---`</font><br>
+<font color="blue">`---------------------------------------------------------------------------`</font>
+
+ * <font color="blue">`Type { `*`BaseType`*` base; `*`ArrayDims`*`[] dims; `*`Bool`*` const, volatile; `*`Token`*` passBy; `*`Bool?`*` nullable; }`</font>
    * <font color="green">`// passBy options: ref, val, in, out, <null>`</font>
- * `ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const, volatile; `*`Bool?`*` nullable; }`
- * `<BaseType> { }`
+ * <font color="blue">`ArrayDims { `*`Expression`*`[] dims; `*`Bool`*` const, volatile; `*`Bool?`*` nullable; }`</font>
+ * <font color="blue">`<BaseType> { }`</font>
    * `FuncPtr { `*`Entity`*` thisArg; `*`Variable`*`[] args; `*`ReturnValue`*`[] returns; }`
-   * `EntityType { `*`Entity`*` entity; }`
+   * <font color="blue">`EntityType { `*`Entity`*` entity; }`</font>
  * `ReturnValue { `*`Type`*` type; `*`Attrib`*`[] attributes; }`
  * `Attrib { `*`Entity`*` name; `*`Expression`*`[] args; }`
  * `Import { `*`Token`*` alias; `*`Entity`*` entity; }`
@@ -168,7 +172,7 @@ The following classes will be used to build a [http://en.wikipedia.org/wiki/Abst
    * `Operation { `*`Token`*` kind; `*`Expression`*` left, right; }`
      * `Ternary { `*`Expression`*` condition; }`
    * `Lambda { `*`FuncPtr`*` signature; `*`Block`*` code; }`
-   * `Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` child; }`
+   * <font color="blue">`Entity { `*`Token`*` name; `*`Type`*`[] params; `*`Entity`*` child; }`</font>
    * `Call { `*`Bool`*` isNew; `*`Expression`*` left; `*`Expression`*`[] args, inits; }`
      *  <font color="green">`// function-/constructor-call. Inits stored as Operation{=,member,value}`</font>
    * `Cast { `*`Expression`*` left; `*`Type`*`[] Types; }`
